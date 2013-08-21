@@ -14,10 +14,10 @@ import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 
 
-public class MultiChoiceExpandableListView extends
-									ExpandableListView	implements
-														ExpandableListCheckListener,
-														MultiLevelCheckable{
+public class MultiChoiceExpandableListView	extends
+											ExpandableListView	implements
+																ExpandableListCheckListener,
+																MultiLevelCheckable{
 
 
 	private static final String						TAG								=
@@ -58,24 +58,17 @@ public class MultiChoiceExpandableListView extends
 	private int										groupCheckTotal,
 													childCheckTotal;
 
-	private int										groupIndicatorPosition			=
-																						GROUP_INDICATOR_LEFT;
-
 	private ArrayList<ExpandableListCheckListener>	mCheckListeners;
 
+	private MultiChoiceExpandableAdapter			mAdapterWrapper;
 
-	/**
-	 * 
-	 */
 	private BitSet									mCheckedGroups;
 	private HashMap<Integer, BitSet>				mCheckedChildren;
 
-	private BaseBoostExpandableAdapter				mAdapter;
-
 
 	public MultiChoiceExpandableListView(	Context context,
-									AttributeSet attrs,
-									int defStyle){
+											AttributeSet attrs,
+											int defStyle){
 
 		super(	context,
 				attrs,
@@ -87,7 +80,7 @@ public class MultiChoiceExpandableListView extends
 
 
 	public MultiChoiceExpandableListView(	Context context,
-									AttributeSet attrs){
+											AttributeSet attrs){
 
 		this(	context,
 				attrs,
@@ -132,20 +125,18 @@ public class MultiChoiceExpandableListView extends
 	@Override
 	public void setAdapter(ExpandableListAdapter adapter){
 
-		super.setAdapter(adapter);
+		if (mAdapterWrapper == null)
+			mAdapterWrapper = new MultiChoiceExpandableAdapter(adapter);
 
-		Log.e(	TAG,
-				"Need to use an adapter that implements BoostExpadable");
+		super.setAdapter(mAdapterWrapper);
+
 	}
 
 
-	public void setAdapter(BaseBoostExpandableAdapter adapter){
+	@Override
+	public ExpandableListAdapter getExpandableListAdapter(){
 
-		super.setAdapter(adapter);
-
-		mAdapter = adapter;
-
-		((BaseBoostExpandableAdapter) mAdapter).setExpandableCheckListener(this);
+		return mAdapterWrapper.getWrappedAdapter();
 	}
 
 
@@ -629,8 +620,8 @@ public class MultiChoiceExpandableListView extends
 
 
 	public MultiChoiceExpandableListView setGroupChoice(int groupPosition,
-													boolean isChecked,
-													boolean refreshList){
+														boolean isChecked,
+														boolean refreshList){
 
 		if (groupCheckMode == CHECK_MODE_NONE){
 			Log.w(	TAG,
@@ -682,9 +673,9 @@ public class MultiChoiceExpandableListView extends
 
 
 	public MultiChoiceExpandableListView setChildChoice(int groupPosition,
-													int childPosition,
-													boolean isChecked,
-													boolean refreshList){
+														int childPosition,
+														boolean isChecked,
+														boolean refreshList){
 
 
 		if (childCheckMode == CHECK_MODE_NONE)
@@ -860,7 +851,8 @@ public class MultiChoiceExpandableListView extends
 
 
 	@Override
-	public int getCheckedChildCount(long groupId) {
+	public int getCheckedChildCount(long groupId){
+
 		// TODO Auto-generated method stub
 		return 0;
 	}
