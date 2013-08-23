@@ -1,65 +1,76 @@
 package com.kemallette.MultiChoiceExpandableListView;
 
+
 import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.HashMap;
 
 import android.content.Context;
 import android.os.Parcelable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.widget.Checkable;
-import android.widget.CompoundButton;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 
-public class MultiChoiceExpandableListView extends ExpandableListView implements
-		ExpandableListCheckListener, MultiLevelCheckable {
+public class MultiChoiceExpandableListView	extends
+											ExpandableListView	implements
+																ExpandableListCheckListener,
+																ParentChildCheckable{
 
-	private static final String TAG = "MultiChoiceExpandableListView";
-
-
-	private boolean checkChildrenOnGroupCheck = false;
-
-	private int groupCheckMode = CHECK_MODE_NONE;
-	private int childCheckMode = CHECK_MODE_NONE;
-
-	private int groupCheckTotal, childCheckTotal;
-
-	private ArrayList<ExpandableListCheckListener> mCheckListeners;
-
-	private MultiChoiceExpandableAdapter mAdapterWrapper;
+	private static final String						TAG							= "MultiChoiceExpandableListView";
 
 
-	public MultiChoiceExpandableListView(Context context, AttributeSet attrs,
-			int defStyle) {
+	private boolean									checkChildrenOnGroupCheck	= false;
 
-		super(context, attrs, defStyle);
+	private int										groupCheckMode				= CHECK_MODE_NONE;
+	private int										childCheckMode				= CHECK_MODE_NONE;
+
+	private int										groupCheckTotal,
+													childCheckTotal;
+
+	private ArrayList<ExpandableListCheckListener>	mCheckListeners;
+
+	private MultiChoiceExpandableAdapter			mAdapterWrapper;
+
+
+	public MultiChoiceExpandableListView(	Context context,
+											AttributeSet attrs,
+											int defStyle){
+
+		super(	context,
+				attrs,
+				defStyle);
 
 		// TODO: set check modes and checkChildrenOnGroupCheck from xml attrs
 
 	}
 
-	public MultiChoiceExpandableListView(Context context, AttributeSet attrs) {
 
-		this(context, attrs, -1);
+	public MultiChoiceExpandableListView(	Context context,
+											AttributeSet attrs){
+
+		this(	context,
+				attrs,
+				-1);
 	}
 
-	public MultiChoiceExpandableListView(Context context) {
 
-		this(context, null);
+	public MultiChoiceExpandableListView(Context context){
+
+		this(	context,
+				null);
 	}
+
 
 	@Override
-	public void onRestoreInstanceState(Parcelable state) {
+	public void onRestoreInstanceState(Parcelable state){
 
 		super.onRestoreInstanceState(state);
 
 		// TODO: restore necessary saved fields
 	}
 
+
 	@Override
-	public Parcelable onSaveInstanceState() {
+	public Parcelable onSaveInstanceState(){
 
 		return super.onSaveInstanceState();
 
@@ -68,7 +79,7 @@ public class MultiChoiceExpandableListView extends ExpandableListView implements
 
 
 	@Override
-	public void setAdapter(ExpandableListAdapter adapter) {
+	public void setAdapter(ExpandableListAdapter adapter){
 
 		if (mAdapterWrapper == null)
 			mAdapterWrapper = new MultiChoiceExpandableAdapter(adapter);
@@ -77,156 +88,177 @@ public class MultiChoiceExpandableListView extends ExpandableListView implements
 
 	}
 
+
 	@Override
-	public ExpandableListAdapter getExpandableListAdapter() {
+	public ExpandableListAdapter getExpandableListAdapter(){
 
 		return mAdapterWrapper.getWrappedAdapter();
 	}
 
-	
+
 	/***********************************************************
 	 * ExpandableListCheckListener Callbacks
 	 ************************************************************/
 	@Override
 	public void onGroupCheckChange(Checkable checkedView, int groupPosition,
-			long groupId, boolean isChecked) {
-		
-		setGroupChoice(groupPosition, isChecked, false);
+									long groupId, boolean isChecked){
+
+		// setGroupChoice( groupPosition,
+		// isChecked,
+		// false);
 
 		for (ExpandableListCheckListener mListener : mCheckListeners)
-			mListener.onGroupCheckChange(checkedView, groupPosition, groupId,
-					isChecked);
+			mListener.onGroupCheckChange(	checkedView,
+											groupPosition,
+											groupId,
+											isChecked);
 	}
+
 
 	@Override
-	public void onChildCheckChange(Checkable checkedView, int groupPosition,
-			int childPosition, long childId, boolean isChecked) {
-		
-		setChildChoice(groupPosition, childPosition, isChecked, false);
+	public void onChildCheckChange(Checkable checkedView,
+									int groupPosition,
+									int childPosition,
+									long childId,
+									boolean isChecked){
+
+		//
+		// setChildChoice( groupPosition,
+		// childPosition,
+		// isChecked,
+		// false);
 
 		for (ExpandableListCheckListener mListener : mCheckListeners)
-			mListener.onChildCheckChange(checkedView, groupPosition,
-					childPosition, childId, isChecked);
+			mListener.onChildCheckChange(	checkedView,
+											groupPosition,
+											childPosition,
+											childId,
+											isChecked);
 	}
-	
-	
-//	private void validateCheckedGroups() {
-//
-//		if (mCheckedGroups == null) {
-//
-//			mCheckedGroups = new BitSet(mAdapter.getGroupCount());
-//			return;
-//
-//		} else if (mCheckedGroups.length() < mAdapter.getGroupCount()) {
-//
-//			BitSet newBitSet = new BitSet(mAdapter.getGroupCount());
-//
-//			copyBitSet(mCheckedGroups, newBitSet);
-//			mCheckedGroups = newBitSet;
-//		}
-//
-//	}
-//
-//	private void validateCheckState() {
-//
-//		validateCheckedChildren();
-//
-//		int i = 0;
-//		for (BitSet mChildren : mCheckedChildren.values()) {
-//			if (mChildren.cardinality() == mChildren.length())
-//				setGroupChoice(i, true, true);
-//			else if (mChildren.isEmpty())
-//				setGroupChoice(i, false, true);
-//			i++;
-//		}
-//	}
-//
-//	private void validateCheckedChildren(int groupPosition) {
-//
-//		if (mCheckedChildren == null) {
-//			mCheckedChildren = new HashMap<Integer, BitSet>(
-//					mAdapter.getGroupCount());
-//			return;
-//		}
-//
-//		BitSet mChildren = mCheckedChildren.get(groupPosition);
-//
-//		if (mChildren == null) {
-//			mChildren = new BitSet(mAdapter.getChildrenCount(groupPosition));
-//			return;
-//		}
-//
-//		if (mChildren.length() < mAdapter.getChildrenCount(groupPosition)) {
-//			BitSet copyTo = new BitSet(mAdapter.getChildrenCount(groupPosition));
-//			copyBitSet(mChildren, copyTo);
-//			mCheckedChildren.put(groupPosition, copyTo);
-//		}
-//
-//	}
-//
-//	private void validateCheckedChildren() {
-//
-//		if (mCheckedChildren == null) {
-//			mCheckedChildren = new HashMap<Integer, BitSet>(
-//					mAdapter.getGroupCount());
-//			return;
-//		}
-//
-//		for (int i : mCheckedChildren.keySet())
-//			validateCheckedChildren(i);
-//	}
-//
-//	private BitSet copyBitSet(BitSet copyFrom, BitSet copyTo) {
-//
-//		int i = copyFrom.nextSetBit(0);
-//		while (i > -1) {
-//
-//			copyTo.set(i, copyFrom.get(i));
-//
-//			i = copyFrom.nextSetBit(i + 1);
-//		}
-//
-//		return copyTo;
-//	}
 
-	private void refresh() {
 
-		if (mAdapterWrapper != null) {
+	// private void validateCheckedGroups() {
+	//
+	// if (mCheckedGroups == null) {
+	//
+	// mCheckedGroups = new BitSet(mAdapter.getGroupCount());
+	// return;
+	//
+	// } else if (mCheckedGroups.length() < mAdapter.getGroupCount()) {
+	//
+	// BitSet newBitSet = new BitSet(mAdapter.getGroupCount());
+	//
+	// copyBitSet(mCheckedGroups, newBitSet);
+	// mCheckedGroups = newBitSet;
+	// }
+	//
+	// }
+	//
+	// private void validateCheckState() {
+	//
+	// validateCheckedChildren();
+	//
+	// int i = 0;
+	// for (BitSet mChildren : mCheckedChildren.values()) {
+	// if (mChildren.cardinality() == mChildren.length())
+	// setGroupChoice(i, true, true);
+	// else if (mChildren.isEmpty())
+	// setGroupChoice(i, false, true);
+	// i++;
+	// }
+	// }
+	//
+	// private void validateCheckedChildren(int groupPosition) {
+	//
+	// if (mCheckedChildren == null) {
+	// mCheckedChildren = new HashMap<Integer, BitSet>(
+	// mAdapter.getGroupCount());
+	// return;
+	// }
+	//
+	// BitSet mChildren = mCheckedChildren.get(groupPosition);
+	//
+	// if (mChildren == null) {
+	// mChildren = new BitSet(mAdapter.getChildrenCount(groupPosition));
+	// return;
+	// }
+	//
+	// if (mChildren.length() < mAdapter.getChildrenCount(groupPosition)) {
+	// BitSet copyTo = new BitSet(mAdapter.getChildrenCount(groupPosition));
+	// copyBitSet(mChildren, copyTo);
+	// mCheckedChildren.put(groupPosition, copyTo);
+	// }
+	//
+	// }
+	//
+	// private void validateCheckedChildren() {
+	//
+	// if (mCheckedChildren == null) {
+	// mCheckedChildren = new HashMap<Integer, BitSet>(
+	// mAdapter.getGroupCount());
+	// return;
+	// }
+	//
+	// for (int i : mCheckedChildren.keySet())
+	// validateCheckedChildren(i);
+	// }
+	//
+	// private BitSet copyBitSet(BitSet copyFrom, BitSet copyTo) {
+	//
+	// int i = copyFrom.nextSetBit(0);
+	// while (i > -1) {
+	//
+	// copyTo.set(i, copyFrom.get(i));
+	//
+	// i = copyFrom.nextSetBit(i + 1);
+	// }
+	//
+	// return copyTo;
+	// }
+
+	private void refresh(){
+
+		if (mAdapterWrapper != null){
 			mAdapterWrapper.notifyDataSetChanged();
 			postInvalidate();
 		}
 	}
 
 
-	public int getGroupCheckMode() {
+	public int getGroupCheckMode(){
 
 		return groupCheckMode;
 	}
 
-	public MultiChoiceExpandableListView setGroupCheckMode(int groupCheckMode) {
-//
+
+	public MultiChoiceExpandableListView setGroupCheckMode(int groupCheckMode){
+
+		//
 		this.groupCheckMode = groupCheckMode;
-//
-//		if (groupCheckMode != CHECK_MODE_NONE && mCheckedGroups == null)
-//			mCheckedGroups = new BitSet(mAdapter.getGroupCount());
+		//
+		// if (groupCheckMode != CHECK_MODE_NONE && mCheckedGroups == null)
+		// mCheckedGroups = new BitSet(mAdapter.getGroupCount());
 
 		return this;
 	}
 
-	public int getChildCheckMode() {
+
+	public int getChildCheckMode(){
 
 		return childCheckMode;
 	}
 
-	public MultiChoiceExpandableListView setChildCheckMode(int childCheckMode) {
+
+	public MultiChoiceExpandableListView setChildCheckMode(int childCheckMode){
 
 		this.childCheckMode = childCheckMode;
 
-//		if (childCheckMode != CHECK_MODE_NONE && mCheckedChildren == null)
-//			mCheckedChildren = new HashMap<Integer, BitSet>();
+		// if (childCheckMode != CHECK_MODE_NONE && mCheckedChildren == null)
+		// mCheckedChildren = new HashMap<Integer, BitSet>();
 
 		return this;
 	}
+
 
 	/**
 	 * Gives a count of ALL checked items in the list (groups and children
@@ -235,10 +267,12 @@ public class MultiChoiceExpandableListView extends ExpandableListView implements
 	 * @return total checked items
 	 */
 	@Override
-	public int getCheckedItemCount() {
+	public int getCheckedItemCount(){
 
-		return getCheckedGroupCount() + getCheckedChildCount();
+		return getCheckedGroupCount()
+				+ getCheckedChildCount();
 	}
+
 
 	/**
 	 * Gives a count of checked groups in the list
@@ -246,16 +280,17 @@ public class MultiChoiceExpandableListView extends ExpandableListView implements
 	 * @return the number of checked groups
 	 */
 	@Override
-	public int getCheckedGroupCount() {
+	public int getCheckedGroupCount(){
 
-		if (mCheckedGroups != null) {
-//			validateCheckedGroups();
-//			groupCheckTotal = mCheckedGroups.cardinality();
-		} else
-			groupCheckTotal = 0;
+		// if (mCheckedGroups != null){
+		// validateCheckedGroups();
+		// groupCheckTotal = mCheckedGroups.cardinality();
+		// }else
+		// groupCheckTotal = 0;
 
 		return groupCheckTotal;
 	}
+
 
 	/**
 	 * Gives a count of ALL checked children in the list regardless of group
@@ -264,18 +299,19 @@ public class MultiChoiceExpandableListView extends ExpandableListView implements
 	 * @return total checked children
 	 */
 	@Override
-	public int getCheckedChildCount() {
+	public int getCheckedChildCount(){
 
 		childCheckTotal = 0;
 
-//		validateCheckedChildren();
+		// validateCheckedChildren();
 
-//		if (mCheckedChildren != null)
-//			for (BitSet mChildren : mCheckedChildren.values())
-//				childCheckTotal += mChildren.cardinality();
+		// if (mCheckedChildren != null)
+		// for (BitSet mChildren : mCheckedChildren.values())
+		// childCheckTotal += mChildren.cardinality();
 
 		return childCheckTotal;
 	}
+
 
 	/**
 	 * Gives a count of all the checked children for the parent group at a
@@ -288,40 +324,42 @@ public class MultiChoiceExpandableListView extends ExpandableListView implements
 	 *         groupPosition
 	 */
 	@Override
-	public int getCheckedChildCount(int groupPosition) {
+	public int getCheckedChildCount(int groupPosition){
 
-		if (mCheckedChildren != null) {
-
-//			validateCheckedChildren(groupPosition);
-
-			BitSet mChildren = mCheckedChildren.get(groupPosition);
-			if (mChildren != null)
-				return mChildren.cardinality();
-			else
-				return -1;
-
-		} else
-			return -1;
+		// if (mCheckedChildren != null){
+		//
+		// // validateCheckedChildren(groupPosition);
+		//
+		// BitSet mChildren = mCheckedChildren.get(groupPosition);
+		// if (mChildren != null)
+		// return mChildren.cardinality();
+		// else
+		// return -1;
+		//
+		// }else
+		return -1;
 
 	}
+
 
 	/**
 	 * Clears all checked items in the list and resets the all checked counts.
 	 */
 	@Override
-	public void clearChoices() {
+	public void clearChoices(){
 
-		if (mCheckedChildren != null)
-			mCheckedChildren.clear();
-
-		if (mCheckedGroups != null)
-			mCheckedGroups.clear();
+		// if (mCheckedChildren != null)
+		// mCheckedChildren.clear();
+		//
+		// if (mCheckedGroups != null)
+		// mCheckedGroups.clear();
 
 		groupCheckTotal = 0;
 		childCheckTotal = 0;
 
 		refresh();
 	}
+
 
 	/**
 	 * Clears all checked groups in the list.
@@ -329,26 +367,27 @@ public class MultiChoiceExpandableListView extends ExpandableListView implements
 	 * Caution: if you set checkChildrenOnGroupCheck to true, all checked
 	 * children under the checked parent groups will be cleared as well.
 	 */
-	public void clearGroupChoices() {
+	public void clearGroupChoices(){
 
-//		validateCheckedGroups();
-//
-//		int gPos = mCheckedGroups.nextSetBit(0);
-//
-//		while (mCheckedGroups.nextSetBit(gPos) > -1) {
-//
-//			if (checkChildrenOnGroupCheck)
-//				clearGroupChildChoices(gPos);
-//
-//			gPos = mCheckedGroups.nextSetBit(gPos + 1);
-//		}
-//
-//		mCheckedGroups.clear();
+		// validateCheckedGroups();
+		//
+		// int gPos = mCheckedGroups.nextSetBit(0);
+		//
+		// while (mCheckedGroups.nextSetBit(gPos) > -1) {
+		//
+		// if (checkChildrenOnGroupCheck)
+		// clearGroupChildChoices(gPos);
+		//
+		// gPos = mCheckedGroups.nextSetBit(gPos + 1);
+		// }
+		//
+		// mCheckedGroups.clear();
 
 		groupCheckTotal = 0;
 
 		refresh();
 	}
+
 
 	/**
 	 * Clears all checked children in the list.
@@ -356,17 +395,18 @@ public class MultiChoiceExpandableListView extends ExpandableListView implements
 	 * Caution: if you set checkChildrenOnGroupCheck to true, groups with all
 	 * children checked will also be cleared.
 	 */
-	public void clearChildChoices() {
+	public void clearChildChoices(){
 
-//		validateCheckedChildren();
-//
-//		for (BitSet mChildrenSet : mCheckedChildren.values())
-//			mChildrenSet.clear();
+		// validateCheckedChildren();
+		//
+		// for (BitSet mChildrenSet : mCheckedChildren.values())
+		// mChildrenSet.clear();
 
 		childCheckTotal = 0;
 
-//		validateCheckState();
+		// validateCheckState();
 	}
+
 
 	/**
 	 * Clears all checked children for the specified parent group at
@@ -376,81 +416,90 @@ public class MultiChoiceExpandableListView extends ExpandableListView implements
 	 *            - the position in the list of the parent group from which you
 	 *            want to clear checked children.
 	 */
-	public void clearGroupChildChoices(int groupPosition) {
+	public void clearGroupChildChoices(int groupPosition){
 
-//		validateCheckedChildren(groupPosition);
-//
-//		BitSet mChildren = mCheckedChildren.get(groupPosition);
-//
-//		if (mChildren != null)
-//			mChildren.clear();
-
-		if (checkChildrenOnGroupCheck)
-			setGroupChoice(groupPosition, false, true);
+		// validateCheckedChildren(groupPosition);
+		//
+		// BitSet mChildren = mCheckedChildren.get(groupPosition);
+		//
+		// if (mChildren != null)
+		// mChildren.clear();
+		//
+		// if (checkChildrenOnGroupCheck)
+		// setGroupChoice( groupPosition,
+		// false,
+		// true);
 	}
 
-	public Long[] getCheckedGroupIds() {
-//
-//		if (groupCheckMode != CHECK_MODE_NONE && mCheckedGroups != null) {
-//
-//			ArrayList<Long> mGroupIds = new ArrayList<Long>();
-//			int groupPos = mCheckedGroups.nextSetBit(0);
-//
-//			while (groupPos > -1) {
-//
-//				mGroupIds.add(mAdapter.getGroupId(groupPos));
-//				groupPos = mCheckedGroups.nextSetBit(groupPos + 1);
-//			}
-//
-//			return (Long[]) mGroupIds.toArray();
-//
-//		} else
-//			Log.e(TAG,
-//					"Can't get checked group item positions because group check mode is CHECK_MODE_NONE or mCheckedGroups is null");
+
+	@Override
+	public long[] getCheckedGroupIds(){
+
+		//
+		// if (groupCheckMode != CHECK_MODE_NONE && mCheckedGroups != null) {
+		//
+		// ArrayList<Long> mGroupIds = new ArrayList<Long>();
+		// int groupPos = mCheckedGroups.nextSetBit(0);
+		//
+		// while (groupPos > -1) {
+		//
+		// mGroupIds.add(mAdapter.getGroupId(groupPos));
+		// groupPos = mCheckedGroups.nextSetBit(groupPos + 1);
+		// }
+		//
+		// return (Long[]) mGroupIds.toArray();
+		//
+		// } else
+		// Log.e(TAG,
+		// "Can't get checked group item positions because group check mode is CHECK_MODE_NONE or mCheckedGroups is null");
 
 		return null;
 	}
 
-	public Long[] getCheckedChildIds(int groupPosition) {
 
-//		if (childCheckMode != CHECK_MODE_NONE && mCheckedChildren != null) {
-//
-//			BitSet mChildren = mCheckedChildren.get(groupPosition);
-//
-//			if (!mChildren.isEmpty()) {
-//
-//				ArrayList<Long> mChildIds = new ArrayList<Long>();
-//
-//				int childPos = mChildren.nextSetBit(0);
-//
-//				while (childPos > -1) {
-//
-//					mChildIds.add(mAdapter.getChildId(groupPosition, childPos));
-//					childPos = mChildren.nextSetBit(childPos + 1);
-//				}
-//
-//				return (Long[]) mChildIds.toArray();
-//			}
-//
-//		} else
-//			Log.e(TAG,
-//					"Can't get checked child item positions because child check mode is CHECK_MODE_NONE or mCheckedChildren is null");
+	@Override
+	public long[] getCheckedChildIds(int groupPosition){
+
+		// if (childCheckMode != CHECK_MODE_NONE && mCheckedChildren != null) {
+		//
+		// BitSet mChildren = mCheckedChildren.get(groupPosition);
+		//
+		// if (!mChildren.isEmpty()) {
+		//
+		// ArrayList<Long> mChildIds = new ArrayList<Long>();
+		//
+		// int childPos = mChildren.nextSetBit(0);
+		//
+		// while (childPos > -1) {
+		//
+		// mChildIds.add(mAdapter.getChildId(groupPosition, childPos));
+		// childPos = mChildren.nextSetBit(childPos + 1);
+		// }
+		//
+		// return (Long[]) mChildIds.toArray();
+		// }
+		//
+		// } else
+		// Log.e(TAG,
+		// "Can't get checked child item positions because child check mode is CHECK_MODE_NONE or mCheckedChildren is null");
 
 		return null;
 	}
 
-	public int getCheckedGroupPosition() {
 
-		if (groupCheckMode == GROUP_CHECK_MODE_ONE) {
+	public int getCheckedGroupPosition(){
 
-			if (mCheckedGroups != null)
-				return mCheckedGroups.nextSetBit(0);
-		} else
-			Log.e(TAG,
-					"Can't get checked group item position because group check mode is not GROUP_CHECK_MODE_ONE");
+		// if (groupCheckMode == GROUP_CHECK_MODE_ONE){
+		//
+		// if (mCheckedGroups != null)
+		// return mCheckedGroups.nextSetBit(0);
+		// }else
+		// Log.e( TAG,
+		// "Can't get checked group item position because group check mode is not GROUP_CHECK_MODE_ONE");
 
 		return -1;
 	}
+
 
 	/**
 	 * This checks for the single checked child. This method is ONLY for use if
@@ -458,215 +507,189 @@ public class MultiChoiceExpandableListView extends ExpandableListView implements
 	 * 
 	 * @return int[] containing {groupPosition, childPosition}
 	 */
-	public int[] getCheckedChildPosition() {
+	public int[] getCheckedChildPosition(){
 
-		if (childCheckMode == CHILD_CHECK_MODE_ONE) {
-			if (mCheckedChildren != null) {
-
-				BitSet mChildren;
-				int childPos = 0;
-				for (Integer checkedGroup : mCheckedChildren.keySet()) {
-
-					mChildren = mCheckedChildren.get(checkedGroup);
-
-					if (mChildren != null) {
-						childPos = mChildren.nextSetBit(0);
-						if (childPos > -1)
-							return new int[] { checkedGroup, childPos };
-					}
-				}
-			}
-
-		} else
-			Log.e(TAG,
-					"Can't get checked child item position because group child mode is not CHILD_CHECK_MODE_ONE");
+		// if (childCheckMode == CHILD_CHECK_MODE_ONE){
+		// if (mCheckedChildren != null){
+		//
+		// BitSet mChildren;
+		// int childPos = 0;
+		// for (Integer checkedGroup : mCheckedChildren.keySet()){
+		//
+		// mChildren = mCheckedChildren.get(checkedGroup);
+		//
+		// if (mChildren != null){
+		// childPos = mChildren.nextSetBit(0);
+		// if (childPos > -1)
+		// return new int[] { checkedGroup,
+		// childPos };
+		// }
+		// }
+		// }
+		//
+		// }else
+		// Log.e( TAG,
+		// "Can't get checked child item position because group child mode is not CHILD_CHECK_MODE_ONE");
 		return null;
 	}
+
 
 	/**
 	 * @param groupPos
 	 * @return checked child position in group at groupPosition
 	 */
-	public int getCheckedChildPosition(int groupPosition) {
+	public int getCheckedChildPosition(int groupPosition){
 
-		if (childCheckMode != CHILD_CHECK_MODE_ONE_PER_GROUP
-				&& mCheckedChildren != null) {
-
-			BitSet mChildren = mCheckedChildren.get(groupPosition);
-			if (mChildren != null)
-				return mChildren.nextSetBit(0);
-		} else
-			Log.e(TAG,
-					"Can't get checked child item position because group child mode is not CHILD_CHECK_MODE_ONE_PER_GROUP");
+		// if (childCheckMode != CHILD_CHECK_MODE_ONE_PER_GROUP
+		// && mCheckedChildren != null){
+		//
+		// BitSet mChildren = mCheckedChildren.get(groupPosition);
+		// if (mChildren != null)
+		// return mChildren.nextSetBit(0);
+		// }else
+		// Log.e( TAG,
+		// "Can't get checked child item position because group child mode is not CHILD_CHECK_MODE_ONE_PER_GROUP");
 		return -1;
 	}
 
-	public boolean isGroupChecked(int groupPosition) {
 
-		if (mCheckedGroups != null)
-			return mCheckedGroups.get(groupPosition);
+	public boolean isGroupChecked(int groupPosition){
 
-		return false;
-	}
-
-	public boolean isChildChecked(int groupPosition, int childPosition) {
-
-		if (mCheckedChildren != null) {
-
-			BitSet mBitSet = mCheckedChildren.get(groupPosition);
-
-			if (mBitSet != null)
-				return mBitSet.get(childPosition);
-		}
+		// if (mCheckedGroups != null)
+		// return mCheckedGroups.get(groupPosition);
 
 		return false;
 	}
 
-	public MultiChoiceExpandableListView setGroupChoice(int groupPosition,
-			boolean isChecked, boolean refreshList) {
 
-		if (groupCheckMode == CHECK_MODE_NONE) {
-			Log.w(TAG,
-					"Can't set group checked without enabling a group check mode.");
-			return this;
-		}
+	public boolean isChildChecked(int groupPosition, int childPosition){
 
-//		validateCheckedGroups();
-//
-//		if (mCheckedGroups == null)
-//			mCheckedGroups = new BitSet(mAdapter.getGroupCount());
+		// if (mCheckedChildren != null){
+		//
+		// BitSet mBitSet = mCheckedChildren.get(groupPosition);
+		//
+		// if (mBitSet != null)
+		// return mBitSet.get(childPosition);
+		// }
 
-		if (isChecked != mCheckedGroups.get(groupPosition))
-			// statechange
-			// hasn't been
-			// recorded
-			if (isChecked) {
-
-				if (groupCheckMode == GROUP_CHECK_MODE_ONE) {// Only one
-																// group at a
-																// time.
-					if (checkChildrenOnGroupCheck)
-						clearGroupChoices();
-
-					mCheckedGroups.clear();
-				}
-
-				mCheckedGroups.set(groupPosition);
-
-			} else
-				// Not checked and hasn't been recorded
-				mCheckedGroups.clear(groupPosition);
-
-		if (checkChildrenOnGroupCheck && childCheckMode == CHECK_MODE_MULTI)
-			setGroupChildrenChoices(groupPosition, isChecked, refreshList);
-		else
-			Log.w(TAG, "Can't have both child_check_mode_one or one per group "
-					+ "and checkChildrenOnGroupCheck true simultaneously.");
-
-		if (refreshList)
-			refresh();
-
-		return this;
+		return false;
 	}
 
-	public MultiChoiceExpandableListView setChildChoice(int groupPosition,
-			int childPosition, boolean isChecked, boolean refreshList) {
 
-//		if (childCheckMode == CHECK_MODE_NONE)
-//			Log.w(TAG,
-//					"Can't set group checked without enabling a child check mode.");
-//
-//		validateCheckedChildren(groupPosition);
-//
-//		if (childCheckMode == CHILD_CHECK_MODE_ONE_PER_GROUP)
-//			clearGroupChildChoices(groupPosition);
-//		else if (childCheckMode == CHILD_CHECK_MODE_ONE)
-//			clearChildChoices();
-//
-//		BitSet mBs = null;
-//
-//		if (mCheckedChildren != null)
-//			mBs = mCheckedChildren.get(groupPosition);
-//		else
-//			mCheckedChildren = new HashMap<Integer, BitSet>();
-//
-//		if (mBs == null)
-//			mBs = new BitSet(mAdapter.getChildrenCount(groupPosition));
-//
-//		if (mBs.get(childPosition) != isChecked)
-//			mBs.set(childPosition, isChecked);
-//
-//		if (refreshList)
-//			refresh();
+	// public MultiChoiceExpandableListView setGroupChoice(int groupPosition,
+	// boolean isChecked,
+	// boolean refreshList){
+	//
+	// if (groupCheckMode == CHECK_MODE_NONE){
+	// Log.w( TAG,
+	// "Can't set group checked without enabling a group check mode.");
+	// return this;
+	// }
+	//
+	//
+	// validateCheckedGroups();
+	//
+	// if (mCheckedGroups == null)
+	// mCheckedGroups = new BitSet(mAdapter.getGroupCount());
+	//
+	// if (isChecked != mCheckedGroups.get(groupPosition))
+	// statechange
+	// hasn't been
+	// recorded
+	// if (isChecked){
+	//
+	// if (groupCheckMode == GROUP_CHECK_MODE_ONE){// Only one
+	// // group at a
+	// // time.
+	// if (checkChildrenOnGroupCheck)
+	// clearGroupChoices();
+	//
+	// mCheckedGroups.clear();
+	// }
+	//
+	// mCheckedGroups.set(groupPosition);
+	//
+	// }else
+	// Not checked and hasn't been recorded
+	// mCheckedGroups.clear(groupPosition);
+	//
+	// if (checkChildrenOnGroupCheck
+	// && childCheckMode == CHECK_MODE_MULTI)
+	// setGroupChildrenChoices(groupPosition,
+	// isChecked,
+	// refreshList);
+	// else
+	// Log.w( TAG,
+	// "Can't have both child_check_mode_one or one per group "
+	// + "and checkChildrenOnGroupCheck true simultaneously.");
+	//
+	// if (refreshList)
+	// refresh();
+	//
+	// return this;
+	// }
 
-		return this;
+
+	// public MultiChoiceExpandableListView setChildChoice(int groupPosition,
+	// int childPosition,
+	// boolean isChecked,
+	// boolean refreshList){
+
+	// if (childCheckMode == CHECK_MODE_NONE)
+	// Log.w(TAG,
+	// "Can't set group checked without enabling a child check mode.");
+	//
+	// validateCheckedChildren(groupPosition);
+	//
+	// if (childCheckMode == CHILD_CHECK_MODE_ONE_PER_GROUP)
+	// clearGroupChildChoices(groupPosition);
+	// else if (childCheckMode == CHILD_CHECK_MODE_ONE)
+	// clearChildChoices();
+	//
+	// BitSet mBs = null;
+	//
+	// if (mCheckedChildren != null)
+	// mBs = mCheckedChildren.get(groupPosition);
+	// else
+	// mCheckedChildren = new HashMap<Integer, BitSet>();
+	//
+	// if (mBs == null)
+	// mBs = new BitSet(mAdapter.getChildrenCount(groupPosition));
+	//
+	// if (mBs.get(childPosition) != isChecked)
+	// mBs.set(childPosition, isChecked);
+	//
+	// if (refreshList)
+	// refresh();
+
+	// return this;
+	// }
+	//
+
+	@Override
+	public int getCheckedChildCount(long groupId){
+
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
-	public MultiChoiceExpandableListView setGroupChildrenChoices(
-			int groupPosition, boolean isChecked, boolean refreshList) {
 
-//		if (childCheckMode == CHECK_MODE_NONE
-//				|| childCheckMode == CHILD_CHECK_MODE_ONE
-//				|| childCheckMode == CHILD_CHECK_MODE_ONE_PER_GROUP) {
-//			if (isChecked)
-//				Log.e(TAG,
-//						"You must set childCheckMode to CHECK_MODE_MULTI to set more than one child per group");
-//			return this;
-//		}
-//
-//		validateCheckedGroups();
-//		validateCheckedChildren(groupPosition);
-//
-//		if (mCheckedChildren == null) {
-//
-//			if (!isChecked)
-//				return this;
-//
-//			mCheckedChildren = new HashMap<Integer, BitSet>(
-//					mAdapter.getGroupCount());
-//		}
-//
-//		BitSet checkedChildren = mCheckedChildren.get(groupPosition);
-//		if (checkedChildren == null) {
-//
-//			if (!isChecked)
-//				return this;
-//
-//			checkedChildren = new BitSet(
-//					mAdapter.getChildrenCount(groupPosition));
-//			mCheckedChildren.put(groupPosition, checkedChildren);
-//		}
-//
-//		if (isChecked)
-//			checkedChildren.set(0, checkedChildren.length(), true);
-//		else
-//			checkedChildren.set(0, checkedChildren.length(), false);
-//
-//		if (checkChildrenOnGroupCheck) {
-//			if (mCheckedGroups == null)
-//				mCheckedGroups = new BitSet(mAdapter.getGroupCount());
-//			mCheckedGroups.set(groupPosition, isChecked);
-//		}
-//
-//		if (refreshList)
-//			refresh();
-
-		return this;
-	}
-
-	public MultiChoiceExpandableListView setCheckChildrenOnGroupCheck(
-			boolean checkChildrenOnGroupCheck) {
+	public MultiChoiceExpandableListView
+		setCheckChildrenOnGroupCheck(
+										boolean checkChildrenOnGroupCheck){
 
 		this.checkChildrenOnGroupCheck = checkChildrenOnGroupCheck;
 
 		return this;
 	}
 
+
 	/***********************************************************
 	 * Register/Undregister client ExpandableListChecklisteners
 	 ************************************************************/
-	public boolean registerExpandableCheckListener(
-			ExpandableListCheckListener listener) {
+	public boolean
+		registerExpandableCheckListener(
+										ExpandableListCheckListener listener){
 
 		if (mCheckListeners == null)
 			mCheckListeners = new ArrayList<ExpandableListCheckListener>();
@@ -674,8 +697,10 @@ public class MultiChoiceExpandableListView extends ExpandableListView implements
 		return mCheckListeners.add(listener);
 	}
 
-	public boolean unregisterExpandableCheckListener(
-			ExpandableListCheckListener listener) {
+
+	public boolean
+		unregisterExpandableCheckListener(
+											ExpandableListCheckListener listener){
 
 		if (mCheckListeners == null)
 			return false;
@@ -683,11 +708,135 @@ public class MultiChoiceExpandableListView extends ExpandableListView implements
 			return mCheckListeners.remove(listener);
 	}
 
+
 	@Override
-	public int getCheckedChildCount(long groupId) {
+	public long[] getCheckedChildIds(){
+
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public long[] getCheckedChildIds(long groupId){
+
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public int[] getCheckedGroupPositions(){
+
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public int[] getCheckedChildPositions(){
+
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public int[] getCheckedChildPositions(int groupPosition){
+
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public int[] getCheckedChildPositions(long groupId){
+
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public int getGroupChoiceMode(){
 
 		// TODO Auto-generated method stub
 		return 0;
 	}
+
+
+	@Override
+	public int getChildChoiceMode(){
+
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+
+	@Override
+	public void setGroupChoiceMode(int choiceMode){
+
+		// TODO Auto-generated method stub
+
+	}
+
+
+	@Override
+	public void setChildChoiceMode(int choiceMode){
+
+		// TODO Auto-generated method stub
+
+	}
+
+
+	@Override
+	public void setGroupCheckedState(int groupPosition, boolean checkState){
+
+		// TODO Auto-generated method stub
+
+	}
+
+
+	@Override
+	public void setGroupCheckedState(long groupId, boolean checkState){
+
+		// TODO Auto-generated method stub
+
+	}
+
+
+	@Override
+	public void setChildCheckedState(long childId, boolean checkState){
+
+		// TODO Auto-generated method stub
+
+	}
+
+
+	@Override
+	public void setChildCheckedState(int groupPosition,
+										int childPosition,
+										boolean checkState){
+
+		// TODO Auto-generated method stub
+
+	}
+
+
+	@Override
+	public void checkCheckedGroups(){
+
+		// TODO Auto-generated method stub
+
+	}
+
+
+	@Override
+	public void clearCheckedChildren(){
+
+		// TODO Auto-generated method stub
+
+	}
+
 
 }
