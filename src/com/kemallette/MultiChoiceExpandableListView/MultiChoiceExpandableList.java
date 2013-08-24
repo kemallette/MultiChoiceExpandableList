@@ -1,14 +1,19 @@
 package com.kemallette.MultiChoiceExpandableListView;
 
 
+import java.util.List;
+
+
 /**
- * Interface definition for two-level (group/child) checkable views.
+ * Interface definition for two-level (group/child) expandable checkable list.
+ * Methods which would normally return void return MultiChoiceExpandableList as
+ * a convenience for method chaining.
+ * 
  * 
  * @author kemallette
  * 
  */
-public interface ParentChildCheckable	extends
-										ExpandableListCheckListener{
+public interface MultiChoiceExpandableList{
 
 	/**
 	 * Both groups and children cannot be checked.
@@ -21,11 +26,13 @@ public interface ParentChildCheckable	extends
 	public static final int	CHECK_MODE_MULTI				= 12;
 
 	public static final int	GROUP_CHECK_MODE_ONE			= 11;
+
 	/**
 	 * Only one child out of the entire list can be checked at one time. You
 	 * cannot use this and set checkChildrenOnGroupCheck true
 	 */
 	public static final int	CHILD_CHECK_MODE_ONE			= 13;
+
 	/**
 	 * Only one child item per group can be checked at a time. You cannot use
 	 * this and set checkChidrenOnGroupCheck true.
@@ -118,9 +125,11 @@ public interface ParentChildCheckable	extends
 	 * 
 	 * if !stableIds, cannot ensure these aren't stale
 	 * 
-	 * @return
+	 * @return List of length 2 int arrays representing checked child positions.
+	 *         int[0] is the child's group position and int[1] is the child's
+	 *         position in the group
 	 */
-	public int[] getCheckedChildPositions();
+	public List<int[]> getCheckedChildPositions();
 
 
 	/**
@@ -147,33 +156,66 @@ public interface ParentChildCheckable	extends
 	public int getChildChoiceMode();
 
 
-	public void setGroupChoiceMode(int choiceMode);
+	public MultiChoiceExpandableList setGroupChoiceMode(int choiceMode);
 
 
-	public void setChildChoiceMode(int choiceMode);
+	public MultiChoiceExpandableList setChildChoiceMode(int choiceMode);
 
 
-	public void setGroupCheckedState(int groupPosition, boolean checkState);
+	public MultiChoiceExpandableList
+		setGroupCheckedState(int groupPosition, boolean checkState);
 
 
-	public void setGroupCheckedState(long groupId, boolean checkState);
+	public MultiChoiceExpandableList
+		setGroupCheckedState(long groupId, boolean checkState);
 
 
-	public void setChildCheckedState(long childId, boolean checkState);
+	public MultiChoiceExpandableList
+		setChildCheckedState(long childId, boolean checkState);
 
 
-	public void setChildCheckedState(int groupPosition,
-										int childPosition,
-										boolean checkState);
+	public MultiChoiceExpandableList
+		setChildCheckedState(int groupPosition,
+								int childPosition,
+								boolean checkState);
 
 
-	public void clearChoices();
+	public MultiChoiceExpandableList clearAllChoices();
 
 
-	public void checkCheckedGroups();
+	public MultiChoiceExpandableList clearCheckedGroups();
 
 
-	public void clearCheckedChildren();
+	public MultiChoiceExpandableList clearCheckedChildren();
 
+
+	public MultiChoiceExpandableList
+		clearCheckedGroupChildren(int groupPosition);
+
+
+	public MultiChoiceExpandableList clearCheckedGroupChildren(long groupId);
+
+
+	public boolean isGroupChecked(int groupPosition);
+
+
+	public boolean isGroupChecked(long groupId);
+
+
+	public boolean isChildChecked(long childId);
+
+
+	public boolean isChildChecked(int groupPosition, int childPosition);
+
+
+	public MultiChoiceExpandableList
+		setExpandableCheckListener(ExpandableListCheckListener mListener);
+
+
+	public ExpandableListCheckListener getExpandableListCheckListener();
+
+
+	public MultiChoiceExpandableList
+		removeExpandableCheckListener();
 
 }

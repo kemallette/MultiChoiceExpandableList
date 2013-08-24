@@ -1,184 +1,377 @@
 package com.kemallette.MultiChoiceExpandableListView;
 
+
+import android.database.DataSetObservable;
 import android.database.DataSetObserver;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseExpandableListAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ExpandableListAdapter;
 
-public class MultiChoiceExpandableAdapter implements MultiChoiceAdapterWrapper {
+public class MultiChoiceExpandableAdapter	implements
+											MultiChoiceAdapterWrapper,
+											OnCheckedChangeListener{
 
-	private static final String TAG = "MultiChoiceExpandableAdapter";
+	// TODO: To implement 'checking' a whole list item, instead of using a
+	// compound button,
+	// will need to implement checkable list item views with custom listener
+	// interface
 
-	
-	private class Holder {
 
-		CompoundButton mBox;
+	private static final String	TAG	= "MultiChoiceExpandableAdapter";
+
+	private static final String	GROUP_POSITION	= "groupPosition",
+		CHILD_POSITION = "childPosition",
+		GROUP_ID = "groupId",
+		CHILD_ID = "childId";
+
+
+	/**
+	 * This will listen to the client adapter for data changes.
+	 * 
+	 * @author kemallette
+	 * 
+	 */
+	protected class MyDataObserver	extends
+									DataSetObserver{
+
+		/*
+		 * Client adapter data has changed
+		 * 
+		 * Called when the contents of the data set have changed. The recipient
+		 * will obtain the new contents the next time it queries the data set.
+		 */
+		@Override
+		public void onChanged(){
+
+			mDataSetObservable.notifyChanged();
+		}
+
+
+		/*
+		 * Called when the data set is no longer valid and cannot be queried
+		 * again, such as when the data set has been closed.
+		 */
+		@Override
+		public void onInvalidated(){
+
+			mDataSetObservable.notifyInvalidated();
+		}
 	}
 
-	private ExpandableListAdapter mWrappedAdapter;
+	private class Holder{
 
-	public MultiChoiceExpandableAdapter(ExpandableListAdapter mWrappedAdapter) {
+		CompoundButton	mBox;
+
+
+		void tagGroupBox(int groupPosition, long groupId){
+
+			Bundle mData = new Bundle();
+			mData.putInt(	GROUP_POSITION,
+							groupPosition);
+			mData.putLong(	GROUP_ID,
+							groupId);
+			mBox.setTag(mData);
+		}
+
+
+		void tagChildBox(int groupPosition,
+							int childPosition,
+							long groupId,
+							long childId){
+
+			Bundle mData = new Bundle();
+			mData.putInt(	GROUP_POSITION,
+							groupPosition);
+			mData.putInt(	CHILD_POSITION,
+							childPosition);
+			mData.putLong(	GROUP_ID,
+							groupId);
+			mData.putLong(	CHILD_ID,
+							childId);
+			mBox.setTag(mData);
+		}
+	}
+
+	private final DataSetObservable		mDataSetObservable	= new DataSetObservable();
+	private final MyDataObserver		mDataObserver		= new MyDataObserver();
+
+	private ExpandableListCheckListener	mExpandableCheckListener;
+	private ExpandableListAdapter		mWrappedAdapter;
+
+
+	public MultiChoiceExpandableAdapter(ExpandableListAdapter mWrappedAdapter){
 
 		this.mWrappedAdapter = mWrappedAdapter;
+
+		registerClientDataSetObserver(mDataObserver);
 	}
 
+
+	public MultiChoiceExpandableAdapter(ExpandableListAdapter mWrappedAdapter,
+										ExpandableListCheckListener mExpandableCheckListener){
+
+		this(mWrappedAdapter);
+		this.mExpandableCheckListener = mExpandableCheckListener;
+	}
+
+
 	@Override
-	public ExpandableListAdapter getWrappedAdapter() {
+	public void onCheckedChanged(CompoundButton mButton, boolean isChecked){
+
+		if (mExpandableCheckListener == null)
+			Log.e(	TAG,
+					"mExpandableCheckListener was null - make sure it gets set on MultiChoiceExpandableAdapter!");
+
+
+		Bundle mCheckData = (Bundle) mButton.getTag();
+
+		if (mCheckData != null){
+
+			if (mCheckData.containsKey(CHILD_ID)) // This was a child check
+													// change
+				mExpandableCheckListener.onChildCheckChange(mButton,
+															mCheckData.getInt(GROUP_POSITION),
+															mCheckData.getInt(CHILD_POSITION),
+															mCheckData.getLong(CHILD_ID),
+															isChecked);
+			else
+				mExpandableCheckListener.onGroupCheckChange(mButton,
+															mCheckData.getInt(GROUP_POSITION),
+															mCheckData.getLong(GROUP_ID),
+															isChecked);
+
+		}else
+			Log.e(	TAG,
+					"onCheckedChange mButton didn't have any tag data :( ");
+	}
+
+
+	@Override
+	public ExpandableListAdapter getWrappedAdapter(){
 
 		return mWrappedAdapter;
 	}
 
+
+	public void setWrappedAdapter(ExpandableListAdapter mClientAdapter){
+
+		mWrappedAdapter = mClientAdapter;
+	}
+
+
 	@Override
 	public View getGroupView(int groupPosition, boolean isExpanded,
-			View convertView, ViewGroup parent) {
+								View convertView, ViewGroup parent){
 
-		View groupView = mWrappedAdapter.getGroupView(groupPosition,
-				isExpanded, convertView, parent);
+		View groupView = mWrappedAdapter.getGroupView(	groupPosition,
+														isExpanded,
+														convertView,
+														parent);
 		if (groupView == null)
-			Log.e(TAG, "Users adapter returned null for getGroupView");
+			Log.e(	TAG,
+					"Users adapter returned null for getGroupView");
 
 		Holder mGroupHolder;
-		if (groupView.getTag() == null) {
+		if (groupView.getTag() == null){
 			mGroupHolder = new Holder();
 
 			mGroupHolder.mBox = (CheckBox) groupView
-					.findViewById(android.R.id.checkbox);
+													.findViewById(android.R.id.checkbox);
 
+			mGroupHolder.tagGroupBox(	groupPosition,
+										getGroupId(groupPosition));
+			mGroupHolder.mBox.setOnCheckedChangeListener(this);
 			groupView.setTag(mGroupHolder);
-		} else
+		}else
 			mGroupHolder = (Holder) groupView.getTag();
 
 		return groupView;
 	}
 
-	@Override
-	public View getChildView(final int groupPosition, final int childPosition,
-			boolean isLastChild, View convertView, ViewGroup parent) {
 
-		View childView = mWrappedAdapter.getChildView(groupPosition,
-				childPosition, isLastChild, convertView, parent);
+	@Override
+	public View getChildView(final int groupPosition,
+								final int childPosition,
+								boolean isLastChild,
+								View convertView,
+								ViewGroup parent){
+
+		View childView = mWrappedAdapter.getChildView(	groupPosition,
+														childPosition,
+														isLastChild,
+														convertView,
+														parent);
 
 		if (childView == null)
-			Log.e(TAG, "Users adapter returned null for getChildView");
+			Log.e(	TAG,
+					"Users adapter returned null for getChildView");
 
 		Holder mChildHolder;
-		if (childView.getTag() == null) {
+		if (childView.getTag() == null){
 			mChildHolder = new Holder();
 
 			mChildHolder.mBox = (CheckBox) childView
-					.findViewById(android.R.id.checkbox);
-
+													.findViewById(android.R.id.checkbox);
+			mChildHolder.tagChildBox(	groupPosition,
+										childPosition,
+										getGroupId(groupPosition),
+										getChildId(	groupPosition,
+													childPosition));
+			mChildHolder.mBox.setOnCheckedChangeListener(this);
 			childView.setTag(mChildHolder);
-		} else
+		}else
 			mChildHolder = (Holder) childView.getTag();
 
 		return childView;
 	}
 
+
 	@Override
-	public boolean areAllItemsEnabled() {
+	public void registerDataSetObserver(DataSetObserver mObserver){
+
+		mDataSetObservable.registerObserver(mObserver);
+	}
+
+
+	@Override
+	public void unregisterDataSetObserver(DataSetObserver mObserver){
+
+		mDataSetObservable.unregisterObserver(mObserver);
+	}
+
+
+	/*********************************************************************
+	 * Delegates to client's adapter (mWrappedAdapter)
+	 **********************************************************************/
+	@Override
+	public boolean areAllItemsEnabled(){
 
 		return mWrappedAdapter.areAllItemsEnabled();
 	}
 
-	@Override
-	public Object getChild(int arg0, int arg1) {
 
-		return mWrappedAdapter.getChild(arg0, arg1);
+	@Override
+	public Object getChild(int groupPosition, int childPosition){
+
+		return mWrappedAdapter.getChild(groupPosition,
+										childPosition);
 	}
 
-	@Override
-	public long getChildId(int arg0, int arg1) {
 
-		return mWrappedAdapter.getChildId(arg0, arg1);
+	@Override
+	public long getChildId(int groupPosition, int childPosition){
+
+		return mWrappedAdapter.getChildId(	groupPosition,
+											childPosition);
 	}
 
-	@Override
-	public int getChildrenCount(int arg0) {
 
-		return mWrappedAdapter.getChildrenCount(arg0);
+	@Override
+	public int getChildrenCount(int groupPosition){
+
+		return mWrappedAdapter.getChildrenCount(groupPosition);
 	}
 
-	@Override
-	public long getCombinedChildId(long arg0, long arg1) {
 
-		return mWrappedAdapter.getCombinedChildId(arg0, arg1);
+	@Override
+	public long getCombinedChildId(long groupId, long childId){
+
+		return mWrappedAdapter.getCombinedChildId(	groupId,
+													childId);
 	}
 
+
 	@Override
-	public long getCombinedGroupId(long arg0) {
+	public long getCombinedGroupId(long arg0){
 
 		return mWrappedAdapter.getCombinedGroupId(arg0);
 	}
 
-	@Override
-	public Object getGroup(int arg0) {
 
-		return mWrappedAdapter.getGroup(arg0);
+	@Override
+	public Object getGroup(int groupPosition){
+
+		return mWrappedAdapter.getGroup(groupPosition);
 	}
 
+
 	@Override
-	public int getGroupCount() {
+	public int getGroupCount(){
 
 		return mWrappedAdapter.getGroupCount();
 	}
 
-	@Override
-	public long getGroupId(int arg0) {
 
-		return mWrappedAdapter.getGroupId(arg0);
+	@Override
+	public long getGroupId(int groupPosition){
+
+		return mWrappedAdapter.getGroupId(groupPosition);
 	}
 
+
 	@Override
-	public boolean hasStableIds() {
+	public boolean hasStableIds(){
 
 		return mWrappedAdapter.hasStableIds();
 	}
 
-	@Override
-	public boolean isChildSelectable(int arg0, int arg1) {
 
-		return mWrappedAdapter.isChildSelectable(arg0, arg1);
+	@Override
+	public boolean isChildSelectable(int groupPosition, int childPosition){
+
+		return mWrappedAdapter.isChildSelectable(	groupPosition,
+													childPosition);
 	}
 
+
 	@Override
-	public boolean isEmpty() {
+	public boolean isEmpty(){
 
 		return mWrappedAdapter.isEmpty();
 	}
 
-	@Override
-	public void onGroupCollapsed(int arg0) {
-
-		mWrappedAdapter.onGroupCollapsed(arg0);
-	}
 
 	@Override
-	public void onGroupExpanded(int arg0) {
+	public void onGroupCollapsed(int groupPosition){
 
-		mWrappedAdapter.onGroupExpanded(arg0);
+		mWrappedAdapter.onGroupCollapsed(groupPosition);
 	}
+
 
 	@Override
-	public void registerDataSetObserver(DataSetObserver arg0) {
+	public void onGroupExpanded(int groupPosition){
 
-		mWrappedAdapter.registerDataSetObserver(arg0);
+		mWrappedAdapter.onGroupExpanded(groupPosition);
 	}
 
-	@Override
-	public void unregisterDataSetObserver(DataSetObserver arg0) {
 
-		mWrappedAdapter.unregisterDataSetObserver(arg0);
+	/**
+	 * This is for internal use. Set your listener on
+	 * {@link MultiChoiceExpandableListView} instead.
+	 * 
+	 * @param mListener
+	 */
+	void setExpandableListCheckListener(ExpandableListCheckListener mListener){
+
+		this.mExpandableCheckListener = mListener;
 	}
 
-	public void notifyDataSetChanged() {
 
-		if (mWrappedAdapter instanceof BaseExpandableListAdapter)
-			((BaseExpandableListAdapter) mWrappedAdapter).notifyDataSetChanged();
+	private void registerClientDataSetObserver(DataSetObserver mObserver){
+
+		mWrappedAdapter.registerDataSetObserver(mObserver);
+
 	}
 
+
+	private void unregisterClientDataSetObserver(DataSetObserver mObserver){
+
+		mWrappedAdapter.unregisterDataSetObserver(mObserver);
+
+	}
 }
