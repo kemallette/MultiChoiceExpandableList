@@ -16,6 +16,7 @@ public class MainActivity	extends
 									ExpandableListCheckListener{
 
 	private MultiChoiceExpandableListView	mExpandableList;
+	private ExampleAdapter					mAdapter;
 
 
 	@Override
@@ -27,6 +28,7 @@ public class MainActivity	extends
 
 		initViews();
 		initListAdapter();
+
 	}
 
 
@@ -72,7 +74,7 @@ public class MainActivity	extends
 
 	private void initListAdapter(){
 
-		ExampleAdapter mAdapter = new ExampleAdapter(this);
+		mAdapter = new ExampleAdapter(this);
 		mExpandableList.setAdapter(mAdapter);
 		mExpandableList.setExpandableCheckListener(this);
 	}

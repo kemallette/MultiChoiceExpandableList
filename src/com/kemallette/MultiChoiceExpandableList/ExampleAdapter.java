@@ -41,31 +41,31 @@ public class ExampleAdapter	extends
 
 	private void populateProjects(){
 
-		for (int i = 0; i < 50; i++){
+		for (long i = 0; i < 50; i++){
 			// Add sample projects.
-			mProjects.add(new Project(	i + 500,
+			mProjects.add(new Project(	i + 1000,
 										"List Requirements",
 										"Remember MVP - avoid feature creep"));
 
-			mProjects.add(new Project(	i + 5000,
+			mProjects.add(new Project(	i + 2000,
 										"Select Enviornment, Framework and Tooling",
 										"Try not to roll your own whenever possible"));
 
-			mProjects.add(new Project(	i + 50000,
+			mProjects.add(new Project(	i + 3000,
 										"Do work",
 										"Stop browsing Hacker News, Reddit, Slashdot..."));
 
-			mProjects.add(new Project(	i + 500000,
+			mProjects.add(new Project(	i + 4000,
 										"Iterate!",
 										"Don't give up"));
 
 			mProjects
-						.add(new Project(	i + 5000000,
+						.add(new Project(	i + 5000,
 											"Maintain",
 											"Woohoo, feature requests, bug reports, clueless managers.."));
 
 			mProjects
-						.add(new Project(	i + 50000000,
+						.add(new Project(	i + 6000,
 											"Rest",
 											"You know that thing you do with your head on a pillow?"));
 		}

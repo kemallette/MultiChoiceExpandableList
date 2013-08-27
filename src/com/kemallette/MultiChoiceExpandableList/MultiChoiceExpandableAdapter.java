@@ -98,8 +98,15 @@ public class MultiChoiceExpandableAdapter	extends
 		}
 	}
 
-	private final DataSetObservable		mDataSetObservable	= new DataSetObservable();
-	private final MyDataObserver		mDataObserver		= new MyDataObserver();
+	/**
+	 * Flag which indicates that we're just refreshing a checkable view to match
+	 * the state we have stored. This is needed to avoid duplicating a check
+	 * change callback.
+	 */
+	private boolean						isRefreshingCheckableViewState	= false;
+
+	private final DataSetObservable		mDataSetObservable				= new DataSetObservable();
+	private final MyDataObserver		mDataObserver					= new MyDataObserver();
 
 	private ExpandableListAdapter		mWrappedAdapter;
 	private MultiChoiceExpandableList	mList;
@@ -118,29 +125,40 @@ public class MultiChoiceExpandableAdapter	extends
 	@Override
 	public void onCheckedChanged(CompoundButton mButton, boolean isChecked){
 
+		if (!isRefreshingCheckableViewState){
+			Bundle mCheckData;
 
-		Bundle mCheckData;
+			if (mButton.getTag() != null){
 
-		if (mButton.getTag() != null){
+				mCheckData = (Bundle) mButton.getTag();
 
-			mCheckData = (Bundle) mButton.getTag();
+				if (!mCheckData.isEmpty()){
 
-			if (mCheckData.containsKey(CHILD_ID))
-				// change
-				mList.onChildCheckChange(	mButton,
-											mCheckData.getInt(GROUP_POSITION),
-											mCheckData.getInt(CHILD_POSITION),
-											mCheckData.getLong(CHILD_ID),
-											isChecked);
-			else
-				mList.onGroupCheckChange(	mButton,
-											mCheckData.getInt(GROUP_POSITION),
-											mCheckData.getLong(GROUP_ID),
-											isChecked);
+					setTouchChangeFlagOn(); // Need to let list know this is an
+											// actual touch initiated check
+											// state
+											// change to avoid unnecessary
+											// redraws
 
-		}else
-			Log.e(	TAG,
-					"onCheckedChange mButton didn't have any tag data :( ");
+					if (mCheckData.containsKey(CHILD_ID))
+						mList.onChildCheckChange(	mButton,
+													mCheckData.getInt(GROUP_POSITION),
+													mCheckData.getInt(CHILD_POSITION),
+													mCheckData.getLong(CHILD_ID),
+													isChecked);
+					else
+						mList.onGroupCheckChange(	mButton,
+													mCheckData.getInt(GROUP_POSITION),
+													mCheckData.getLong(GROUP_ID),
+													isChecked);
+
+					setTouchChangeFlagOff(); // Set flag back to default false
+												// value
+				}
+			}else
+				Log.e(	TAG,
+						"onCheckedChange mButton didn't have any tag data :( ");
+		}
 	}
 
 
@@ -148,6 +166,27 @@ public class MultiChoiceExpandableAdapter	extends
 	public ExpandableListAdapter getWrappedAdapter(){
 
 		return mWrappedAdapter;
+	}
+
+
+	public void
+		setRefreshingCheckableViewState(boolean isRefreshingCheckableViewState){
+
+		this.isRefreshingCheckableViewState = isRefreshingCheckableViewState;
+	}
+
+
+	private void setTouchChangeFlagOn(){
+
+		if (mList instanceof MultiChoiceExpandableListView)
+			((MultiChoiceExpandableListView) mList).setIsCheckChangeFromTouch(true);
+	}
+
+
+	private void setTouchChangeFlagOff(){
+
+		if (mList instanceof MultiChoiceExpandableListView)
+			((MultiChoiceExpandableListView) mList).setIsCheckChangeFromTouch(false);
 	}
 
 

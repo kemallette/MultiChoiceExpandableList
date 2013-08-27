@@ -9,6 +9,7 @@ import android.support.v4.util.LongSparseArray;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.SparseBooleanArray;
+import android.view.View;
 import android.widget.Checkable;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
@@ -38,11 +39,14 @@ public class MultiChoiceExpandableListView	extends
 		LongSparseArray<Integer>	mCheckedChildren;
 	}
 
-	private boolean								fireCheckChangeCallback		= true;
-	private boolean								checkChildrenOnGroupCheck	= false;
+	/**
+	 * Flag indicating if an item's checked state change is from a user actually
+	 * touching the screen
+	 */
+	private boolean								isCheckChangeFromTouch	= false;
 
-	private int									groupChoiceMode				= CHECK_MODE_NONE;
-	private int									childChoiceMode				= CHECK_MODE_NONE;
+	private int									groupChoiceMode			= CHECK_MODE_NONE;
+	private int									childChoiceMode			= CHECK_MODE_NONE;
 
 	private int									groupCheckTotal,
 												childCheckTotal;
@@ -137,12 +141,11 @@ public class MultiChoiceExpandableListView	extends
 	public void onGroupCheckChange(Checkable checkedView, int groupPosition,
 									long groupId, boolean isChecked){
 
-		if (fireCheckChangeCallback)
-			if (mClientCheckListener != null)
-				mClientCheckListener.onGroupCheckChange(checkedView,
-														groupPosition,
-														groupId,
-														isChecked);
+		if (mClientCheckListener != null)
+			mClientCheckListener.onGroupCheckChange(checkedView,
+													groupPosition,
+													groupId,
+													isChecked);
 	}
 
 
@@ -153,13 +156,111 @@ public class MultiChoiceExpandableListView	extends
 									long childId,
 									boolean isChecked){
 
-		if (fireCheckChangeCallback)
-			if (mClientCheckListener != null)
-				mClientCheckListener.onChildCheckChange(checkedView,
-														groupPosition,
-														childPosition,
-														childId,
-														isChecked);
+		if (mClientCheckListener != null)
+			mClientCheckListener.onChildCheckChange(checkedView,
+													groupPosition,
+													childPosition,
+													childId,
+													isChecked);
+	}
+
+
+	/*********************************************************************
+	 * Internal utils
+	 **********************************************************************/
+	protected void setIsCheckChangeFromTouch(boolean isCheckChangeFromTouch){
+
+		this.isCheckChangeFromTouch = isCheckChangeFromTouch;
+	}
+
+
+	protected void refreshVisibleCheckableViews(){
+
+		if (isCheckChangeFromTouch) // This is true while a proper touch
+									// initiated check change callback fires
+									// which means the view is already
+									// indicating the check state we have saved
+			return;
+
+		setRefreshingViewStateFlagOn(); // Letting the adapter know we're
+										// refreshing a checkable view's
+										// state in order to avoid
+										// duplicating check change
+										// callbacks
+
+
+		View listItem;
+		Checkable checkableView;
+
+		int packedPositionType, groupPosition, childPosition;
+
+		// These are both implemented in ListView sub classes which means
+		// they're 'raw'/'flat' list positions
+		int firstVis = getFirstVisiblePosition();
+		int lastVis = getLastVisiblePosition();
+		int count = firstVis;
+
+		long packedPosition;
+
+		while (count <= lastVis){ // looping through visible list items which
+									// are the only items that will need to be
+									// refreshed. The adapter's getView will
+									// take care of all non-visible items when
+									// the list is scrolled
+
+			listItem = getChildAt(count); // getChildAt is implemented in
+											// ListView sub classes, so using a
+											// 'raw'/'flat' position is fine
+
+			if (listItem != null){
+
+				checkableView = (Checkable) listItem.findViewById(android.R.id.checkbox);
+
+				// Returns a packed position from the 'raw'/'flat' position we
+				// got above
+				packedPosition = getExpandableListPosition(count);
+
+				// ExpandableListView has static helpers to extract the type
+				// (group or child position) and the group and/or child
+				// positions from a packed position
+				packedPositionType = getPackedPositionType(packedPosition);
+
+				if (packedPositionType != ExpandableListView.PACKED_POSITION_TYPE_NULL){
+
+					groupPosition = getPackedPositionGroup(packedPosition);
+
+					if (packedPositionType == ExpandableListView.PACKED_POSITION_TYPE_CHILD){
+						childPosition = getPackedPositionChild(packedPosition);
+						checkableView.setChecked(isChildChecked(groupPosition,
+																childPosition));
+					}else
+						// Must have a group position
+						checkableView.setChecked(isGroupChecked(groupPosition));
+
+				}else
+					Log.d(	TAG,
+							"Packed position type was null.");
+			}else
+				Log.d(	TAG,
+						"getChildAt didn't retrieve a non-null view");
+
+
+			count++;
+		}
+
+		setRefreshingViewStateFlagOff();
+	}
+
+
+	private void setRefreshingViewStateFlagOn(){
+
+		mAdapterWrapper.setRefreshingCheckableViewState(true);
+	}
+
+
+	private void setRefreshingViewStateFlagOff(){
+
+		mAdapterWrapper.setRefreshingCheckableViewState(false);
 	}
 
 
@@ -174,6 +275,8 @@ public class MultiChoiceExpandableListView	extends
 		// Log.w( TAG,
 		// "Can't set group checked without enabling a group check mode.");
 		// TODO
+
+		refreshVisibleCheckableViews();
 		return this;
 	}
 
@@ -183,6 +286,8 @@ public class MultiChoiceExpandableListView	extends
 															boolean checkState){
 
 		// TODO Auto-generated method stub
+
+		refreshVisibleCheckableViews();
 		return this;
 	}
 
@@ -195,6 +300,8 @@ public class MultiChoiceExpandableListView	extends
 		// Log.w(TAG,
 		// "Can't set group checked without enabling a child check mode.");
 		//
+
+		refreshVisibleCheckableViews();
 		return this;
 	}
 
@@ -205,6 +312,8 @@ public class MultiChoiceExpandableListView	extends
 															boolean checkState){
 
 		// TODO Auto-generated method stub
+
+		refreshVisibleCheckableViews();
 		return this;
 	}
 
@@ -302,7 +411,6 @@ public class MultiChoiceExpandableListView	extends
 										boolean checkChildrenOnGroupCheck){
 
 		// TODO Check that we're in a mode that allows this
-		this.checkChildrenOnGroupCheck = checkChildrenOnGroupCheck;
 
 		return this;
 	}
@@ -422,6 +530,7 @@ public class MultiChoiceExpandableListView	extends
 		groupCheckTotal = 0;
 		childCheckTotal = 0;
 
+		refreshVisibleCheckableViews();
 		return this;
 	}
 
@@ -429,6 +538,7 @@ public class MultiChoiceExpandableListView	extends
 	@Override
 	public MultiChoiceExpandableList clearCheckedGroups(){
 
+		refreshVisibleCheckableViews();
 		return null;
 	}
 
@@ -436,6 +546,7 @@ public class MultiChoiceExpandableListView	extends
 	@Override
 	public MultiChoiceExpandableList clearCheckedChildren(){
 
+		refreshVisibleCheckableViews();
 		return null;
 	}
 
@@ -452,6 +563,8 @@ public class MultiChoiceExpandableListView	extends
 		clearCheckedGroupChildren(int groupPosition){
 
 		// TODO Auto-generated method stub
+
+		refreshVisibleCheckableViews();
 		return null;
 	}
 
@@ -467,6 +580,8 @@ public class MultiChoiceExpandableListView	extends
 	public MultiChoiceExpandableList clearCheckedGroupChildren(long groupId){
 
 		// TODO Auto-generated method stub
+
+		refreshVisibleCheckableViews();
 		return null;
 	}
 
@@ -619,8 +734,8 @@ public class MultiChoiceExpandableListView	extends
 	@Override
 	public void clearChoices(){
 
-		Log.e(	TAG,
-				"For MultiChoiceExpandableListView, use clearAllChoices() instead");
+		Log.w(	TAG,
+				"For MultiChoiceExpandableListView, use clearAllChoices() instead of clearChoices()");
 	}
 
 
