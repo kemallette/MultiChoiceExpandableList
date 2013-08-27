@@ -1,4 +1,4 @@
-package com.kemallette.MultiChoiceExpandableListView;
+package com.kemallette.MultiChoiceExpandableList;
 
 
 import java.util.List;
@@ -7,11 +7,11 @@ import android.content.Context;
 import android.os.Parcelable;
 import android.support.v4.util.LongSparseArray;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.widget.Checkable;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
-import android.widget.ListAdapter;
 
 public class MultiChoiceExpandableListView	extends
 											ExpandableListView	implements
@@ -100,11 +100,11 @@ public class MultiChoiceExpandableListView	extends
 	@Override
 	public Parcelable onSaveInstanceState(){
 
-		Parcelable mParcel =  super.onSaveInstanceState();
+		Parcelable mParcel = super.onSaveInstanceState();
 
 		// TODO: save all necessary fields - remember that super does a few
 		// things too
-		return mParcel
+		return mParcel;
 	}
 
 
@@ -248,7 +248,7 @@ public class MultiChoiceExpandableListView	extends
 	public MultiChoiceExpandableListView setGroupCheckMode(int groupCheckMode){
 
 		this.groupChoiceMode = groupCheckMode;
-		//
+
 		// if (groupChoiceMode != CHECK_MODE_NONE && mCheckedGroups == null)
 		// mCheckedGroups = new BitSet(mAdapter.getGroupCount());
 
@@ -619,8 +619,8 @@ public class MultiChoiceExpandableListView	extends
 	@Override
 	public void clearChoices(){
 
-		throw new RuntimeException(
-									"For MultiChoiceExpandableListView, use clearAllChoices() instead");
+		Log.e(	TAG,
+				"For MultiChoiceExpandableListView, use clearAllChoices() instead");
 	}
 
 
@@ -631,8 +631,9 @@ public class MultiChoiceExpandableListView	extends
 	@Override
 	public long[] getCheckedItemIds(){
 
-		throw new RuntimeException(
-									"For MultiChoiceExpandableListView, use getCheckedChildIds or getCheckedGroupIds instead.");
+		Log.e(	TAG,
+				"For MultiChoiceExpandableListView, use getCheckedChildIds or getCheckedGroupIds instead.");
+		return null;
 	}
 
 
@@ -643,8 +644,9 @@ public class MultiChoiceExpandableListView	extends
 	@Override
 	public int getCheckedItemPosition(){
 
-		throw new RuntimeException(
-									"For MultiChoiceExpandableListView, use getCheckedChildPositions or getCheckedGroupPositions instead");
+		Log.e(	TAG,
+				"For MultiChoiceExpandableListView, use getCheckedChildPositions or getCheckedGroupPositions instead");
+		return -1;
 	}
 
 
@@ -655,8 +657,9 @@ public class MultiChoiceExpandableListView	extends
 	@Override
 	public SparseBooleanArray getCheckedItemPositions(){
 
-		throw new RuntimeException(
-									"For MultiChoiceExpandableListView, use getCheckedChildPositions or getCheckedGroupPositions instead");
+		Log.e(	TAG,
+				"For MultiChoiceExpandableListView, use getCheckedChildPositions or getCheckedGroupPositions instead");
+		return null;
 	}
 
 
@@ -667,21 +670,9 @@ public class MultiChoiceExpandableListView	extends
 	@Override
 	public int getChoiceMode(){
 
-		throw new RuntimeException(
-									"For MultiChoiceExpandableListView, use getGroupChoiceMode or getChildChoiceMode instead");
-	}
-
-
-	/*
-	 * For {@link MultiChoiceExpandableListView},use getExpandableListAdapter
-	 * instead.
-	 */
-	@Override
-	public ListAdapter getAdapter(){
-
-		throw new RuntimeException(
-									"For MultiChoiceExpandableListView, use getExpandableListAdapter instead.");
-
+		Log.e(	TAG,
+				"For MultiChoiceExpandableListView, use getGroupChoiceMode or getChildChoiceMode instead");
+		return -1;
 	}
 
 

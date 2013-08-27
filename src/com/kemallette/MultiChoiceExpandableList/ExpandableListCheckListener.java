@@ -1,7 +1,7 @@
 /**
  * Interface definition for a callback to be invoked when the checked state of an item has changed.
  */
-package com.kemallette.MultiChoiceExpandableListView;
+package com.kemallette.MultiChoiceExpandableList;
 
 import android.widget.Checkable;
 

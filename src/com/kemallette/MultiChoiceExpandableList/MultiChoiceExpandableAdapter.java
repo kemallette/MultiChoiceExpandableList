@@ -1,4 +1,4 @@
-package com.kemallette.MultiChoiceExpandableListView;
+package com.kemallette.MultiChoiceExpandableList;
 
 
 import android.database.DataSetObservable;
@@ -7,14 +7,16 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseExpandableListAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ExpandableListAdapter;
 
-public class MultiChoiceExpandableAdapter	implements
-											MultiChoiceAdapterWrapper,
-											OnCheckedChangeListener{
+public class MultiChoiceExpandableAdapter	extends
+											BaseExpandableListAdapter	implements
+																		MultiChoiceAdapterWrapper,
+																		OnCheckedChangeListener{
 
 	// TODO: To implement 'checking' a whole list item, instead of using a
 	// compound button,
@@ -63,7 +65,7 @@ public class MultiChoiceExpandableAdapter	implements
 		}
 	}
 
-	private class Holder{
+	class Holder{
 
 		CompoundButton	mBox;
 
@@ -128,7 +130,7 @@ public class MultiChoiceExpandableAdapter	implements
 					"mExpandableCheckListener was null - make sure it gets set on MultiChoiceExpandableAdapter!");
 
 
-		Bundle mCheckData = (Bundle) mButton.getTag();
+		Bundle mCheckData = (Bundle) mButton.getTag(R.id.view_holder_key);
 
 		if (mCheckData != null){
 
@@ -177,7 +179,7 @@ public class MultiChoiceExpandableAdapter	implements
 					"Users adapter returned null for getGroupView");
 
 		Holder mGroupHolder;
-		if (groupView.getTag() == null){
+		if (groupView.getTag(R.id.view_holder_key) == null){
 			mGroupHolder = new Holder();
 
 			mGroupHolder.mBox = (CheckBox) groupView
@@ -186,9 +188,10 @@ public class MultiChoiceExpandableAdapter	implements
 			mGroupHolder.tagGroupBox(	groupPosition,
 										getGroupId(groupPosition));
 			mGroupHolder.mBox.setOnCheckedChangeListener(this);
-			groupView.setTag(mGroupHolder);
+			groupView.setTag(	R.id.view_holder_key,
+								mGroupHolder);
 		}else
-			mGroupHolder = (Holder) groupView.getTag();
+			mGroupHolder = (Holder) groupView.getTag(R.id.view_holder_key);
 
 		return groupView;
 	}
@@ -212,7 +215,7 @@ public class MultiChoiceExpandableAdapter	implements
 					"Users adapter returned null for getChildView");
 
 		Holder mChildHolder;
-		if (childView.getTag() == null){
+		if (childView.getTag(R.id.view_holder_key) == null){
 			mChildHolder = new Holder();
 
 			mChildHolder.mBox = (CheckBox) childView
@@ -223,9 +226,10 @@ public class MultiChoiceExpandableAdapter	implements
 										getChildId(	groupPosition,
 													childPosition));
 			mChildHolder.mBox.setOnCheckedChangeListener(this);
-			childView.setTag(mChildHolder);
+			childView.setTag(	R.id.view_holder_key,
+								mChildHolder);
 		}else
-			mChildHolder = (Holder) childView.getTag();
+			mChildHolder = (Holder) childView.getTag(R.id.view_holder_key);
 
 		return childView;
 	}

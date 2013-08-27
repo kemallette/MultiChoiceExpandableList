@@ -1,4 +1,4 @@
-package com.kemallette.MultiChoiceExpandableListView;
+package com.kemallette.MultiChoiceExpandableList;
 
 
 import java.util.List;
