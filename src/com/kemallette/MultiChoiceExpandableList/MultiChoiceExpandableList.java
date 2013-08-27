@@ -13,7 +13,8 @@ import java.util.List;
  * @author kemallette
  * 
  */
-public interface MultiChoiceExpandableList{
+public interface MultiChoiceExpandableList	extends
+											ExpandableListCheckListener{
 
 	/**
 	 * Both groups and children cannot be checked.

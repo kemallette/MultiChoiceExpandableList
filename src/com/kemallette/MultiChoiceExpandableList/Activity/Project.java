@@ -29,23 +29,23 @@ public class Project{
 		mTasks = new ArrayList<Task>();
 
 		mTasks.add(new Task(100,
-							"<b>List Requirements</b>",
-							"<br><i>Remember MVP - avoid feature creep</i>"));
+							"List Requirements",
+							"Remember MVP - avoid feature creep"));
 		mTasks.add(new Task(200,
-							"<b>Select Enviornment, Framework and Tooling</b>",
-							"<br><i>Try not to roll your own whenever possible</i>"));
+							"Select Enviornment, Framework and Tooling",
+							"Try not to roll your own whenever possible"));
 		mTasks.add(new Task(300,
-							"<b>Do work</b>",
-							"<br><i>Stop browsing Hacker News, Reddit, Slashdot...</i>"));
+							"Do work",
+							"Stop browsing Hacker News, Reddit, Slashdot..."));
 		mTasks.add(new Task(400,
-							"<b>Iterate!</b>",
-							"<br><i>Don't give up</i>"));
+							"Iterate!",
+							"Don't give up"));
 		mTasks.add(new Task(500,
-							"<b>Maintain</b>",
-							"<br><i>Woohoo, feature requests, bug reports, clueless managers..</i>"));
+							"Maintain",
+							"Woohoo, feature requests, bug reports, clueless managers.."));
 		mTasks.add(new Task(600,
-							"<b>Rest</b>",
-							"<br><i>You know that thing you do with your head on a pillow?</i>"));
+							"Rest",
+							"You know that thing you do with your head on a pillow?"));
 
 	}
 

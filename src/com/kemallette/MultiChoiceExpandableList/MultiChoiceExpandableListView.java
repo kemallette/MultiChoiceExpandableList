@@ -15,7 +15,6 @@ import android.widget.ExpandableListView;
 
 public class MultiChoiceExpandableListView	extends
 											ExpandableListView	implements
-																ExpandableListCheckListener,
 																MultiChoiceExpandableList{
 
 	private static final String	TAG	= "MultiChoiceExpandableListView";
@@ -115,7 +114,8 @@ public class MultiChoiceExpandableListView	extends
 			throw new NullPointerException("The adapter you passed was null");
 
 		if (mAdapterWrapper == null)
-			mAdapterWrapper = new MultiChoiceExpandableAdapter(adapter);
+			mAdapterWrapper = new MultiChoiceExpandableAdapter(	adapter,
+																this);
 		else
 			mAdapterWrapper.setWrappedAdapter(adapter);
 

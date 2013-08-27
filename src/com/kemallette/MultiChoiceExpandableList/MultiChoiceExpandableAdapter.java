@@ -67,12 +67,12 @@ public class MultiChoiceExpandableAdapter	extends
 
 	class Holder{
 
+		Bundle			mData	= new Bundle();
 		CompoundButton	mBox;
 
 
 		void tagGroupBox(int groupPosition, long groupId){
 
-			Bundle mData = new Bundle();
 			mData.putInt(	GROUP_POSITION,
 							groupPosition);
 			mData.putLong(	GROUP_ID,
@@ -86,7 +86,6 @@ public class MultiChoiceExpandableAdapter	extends
 							long groupId,
 							long childId){
 
-			Bundle mData = new Bundle();
 			mData.putInt(	GROUP_POSITION,
 							groupPosition);
 			mData.putInt(	CHILD_POSITION,
@@ -102,50 +101,42 @@ public class MultiChoiceExpandableAdapter	extends
 	private final DataSetObservable		mDataSetObservable	= new DataSetObservable();
 	private final MyDataObserver		mDataObserver		= new MyDataObserver();
 
-	private ExpandableListCheckListener	mExpandableCheckListener;
 	private ExpandableListAdapter		mWrappedAdapter;
-
-
-	public MultiChoiceExpandableAdapter(ExpandableListAdapter mWrappedAdapter){
-
-		this.mWrappedAdapter = mWrappedAdapter;
-
-		registerClientDataSetObserver(mDataObserver);
-	}
+	private MultiChoiceExpandableList	mList;
 
 
 	public MultiChoiceExpandableAdapter(ExpandableListAdapter mWrappedAdapter,
-										ExpandableListCheckListener mExpandableCheckListener){
+										MultiChoiceExpandableList mList){
 
-		this(mWrappedAdapter);
-		this.mExpandableCheckListener = mExpandableCheckListener;
+		this.mWrappedAdapter = mWrappedAdapter;
+		this.mList = mList;
+
+		registerClientDataSetObserver(mDataObserver);
 	}
 
 
 	@Override
 	public void onCheckedChanged(CompoundButton mButton, boolean isChecked){
 
-		if (mExpandableCheckListener == null)
-			Log.e(	TAG,
-					"mExpandableCheckListener was null - make sure it gets set on MultiChoiceExpandableAdapter!");
 
+		Bundle mCheckData;
 
-		Bundle mCheckData = (Bundle) mButton.getTag(R.id.view_holder_key);
+		if (mButton.getTag() != null){
 
-		if (mCheckData != null){
+			mCheckData = (Bundle) mButton.getTag();
 
-			if (mCheckData.containsKey(CHILD_ID)) // This was a child check
-													// change
-				mExpandableCheckListener.onChildCheckChange(mButton,
-															mCheckData.getInt(GROUP_POSITION),
-															mCheckData.getInt(CHILD_POSITION),
-															mCheckData.getLong(CHILD_ID),
-															isChecked);
+			if (mCheckData.containsKey(CHILD_ID))
+				// change
+				mList.onChildCheckChange(	mButton,
+											mCheckData.getInt(GROUP_POSITION),
+											mCheckData.getInt(CHILD_POSITION),
+											mCheckData.getLong(CHILD_ID),
+											isChecked);
 			else
-				mExpandableCheckListener.onGroupCheckChange(mButton,
-															mCheckData.getInt(GROUP_POSITION),
-															mCheckData.getLong(GROUP_ID),
-															isChecked);
+				mList.onGroupCheckChange(	mButton,
+											mCheckData.getInt(GROUP_POSITION),
+											mCheckData.getLong(GROUP_ID),
+											isChecked);
 
 		}else
 			Log.e(	TAG,
@@ -185,13 +176,17 @@ public class MultiChoiceExpandableAdapter	extends
 			mGroupHolder.mBox = (CheckBox) groupView
 													.findViewById(android.R.id.checkbox);
 
-			mGroupHolder.tagGroupBox(	groupPosition,
-										getGroupId(groupPosition));
+
 			mGroupHolder.mBox.setOnCheckedChangeListener(this);
 			groupView.setTag(	R.id.view_holder_key,
 								mGroupHolder);
 		}else
 			mGroupHolder = (Holder) groupView.getTag(R.id.view_holder_key);
+
+		mGroupHolder.tagGroupBox(	groupPosition,
+									getGroupId(groupPosition));
+		mGroupHolder.mBox.setChecked(mList.isGroupChecked(groupPosition));
+
 
 		return groupView;
 	}
@@ -220,17 +215,21 @@ public class MultiChoiceExpandableAdapter	extends
 
 			mChildHolder.mBox = (CheckBox) childView
 													.findViewById(android.R.id.checkbox);
-			mChildHolder.tagChildBox(	groupPosition,
-										childPosition,
-										getGroupId(groupPosition),
-										getChildId(	groupPosition,
-													childPosition));
+
 			mChildHolder.mBox.setOnCheckedChangeListener(this);
 			childView.setTag(	R.id.view_holder_key,
 								mChildHolder);
 		}else
 			mChildHolder = (Holder) childView.getTag(R.id.view_holder_key);
 
+		mChildHolder.tagChildBox(	groupPosition,
+									childPosition,
+									getGroupId(groupPosition),
+									getChildId(	groupPosition,
+												childPosition));
+
+		mChildHolder.mBox.setChecked(mList.isChildChecked(	groupPosition,
+															childPosition));
 		return childView;
 	}
 
@@ -351,18 +350,6 @@ public class MultiChoiceExpandableAdapter	extends
 	public void onGroupExpanded(int groupPosition){
 
 		mWrappedAdapter.onGroupExpanded(groupPosition);
-	}
-
-
-	/**
-	 * This is for internal use. Set your listener on
-	 * {@link MultiChoiceExpandableListView} instead.
-	 * 
-	 * @param mListener
-	 */
-	void setExpandableListCheckListener(ExpandableListCheckListener mListener){
-
-		this.mExpandableCheckListener = mListener;
 	}
 
 

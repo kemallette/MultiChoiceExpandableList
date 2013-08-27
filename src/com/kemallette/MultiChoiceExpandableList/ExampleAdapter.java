@@ -41,32 +41,34 @@ public class ExampleAdapter	extends
 
 	private void populateProjects(){
 
-		// Add sample projects.
-		mProjects.add(new Project(	10,
-									"<b>List Requirements</b>",
-									"<br><i>Remember MVP - avoid feature creep</i>"));
+		for (int i = 0; i < 50; i++){
+			// Add sample projects.
+			mProjects.add(new Project(	i + 500,
+										"List Requirements",
+										"Remember MVP - avoid feature creep"));
 
-		mProjects.add(new Project(	20,
-									"<b>Select Enviornment, Framework and Tooling</b>",
-									"<br><i>Try not to roll your own whenever possible</i>"));
+			mProjects.add(new Project(	i + 5000,
+										"Select Enviornment, Framework and Tooling",
+										"Try not to roll your own whenever possible"));
 
-		mProjects.add(new Project(	30,
-									"<b>Do work</b>",
-									"<br><i>Stop browsing Hacker News, Reddit, Slashdot...</i>"));
+			mProjects.add(new Project(	i + 50000,
+										"Do work",
+										"Stop browsing Hacker News, Reddit, Slashdot..."));
 
-		mProjects.add(new Project(	40,
-									"<b>Iterate!</b>",
-									"<br><i>Don't give up</i>"));
+			mProjects.add(new Project(	i + 500000,
+										"Iterate!",
+										"Don't give up"));
 
-		mProjects
-					.add(new Project(	50,
-										"<b>Maintain</b>",
-										"<br><i>Woohoo, feature requests, bug reports, clueless managers..</i>"));
+			mProjects
+						.add(new Project(	i + 5000000,
+											"Maintain",
+											"Woohoo, feature requests, bug reports, clueless managers.."));
 
-		mProjects
-					.add(new Project(	60,
-										"<b>Rest</b>",
-										"<br><i>You know that thing you do with your head on a pillow?</i>"));
+			mProjects
+						.add(new Project(	i + 50000000,
+											"Rest",
+											"You know that thing you do with your head on a pillow?"));
+		}
 
 	}
 
@@ -137,7 +139,6 @@ public class ExampleAdapter	extends
 			mHolder.mTitle = (TextView) convertView.findViewById(R.id.title);
 			mHolder.mContent = (TextView) convertView
 														.findViewById(R.id.content);
-
 			convertView.setTag(mHolder);
 		}else
 			mHolder = (ExampleHolder) convertView.getTag();
@@ -152,7 +153,7 @@ public class ExampleAdapter	extends
 
 
 	@Override
-	public View getChildView(	final int groupPosition,
+	public View getChildView(final int groupPosition,
 								final int childPosition,
 								boolean isLastChild,
 								View convertView,
@@ -163,7 +164,7 @@ public class ExampleAdapter	extends
 			if (inflater == null)
 				inflater = ctx.getLayoutInflater();
 
-			convertView = inflater.inflate(	R.layout.list_item,
+			convertView = inflater.inflate(	R.layout.child_list_item,
 											null);
 		}
 
@@ -178,12 +179,10 @@ public class ExampleAdapter	extends
 		}else
 			mHolder = (ExampleHolder) convertView.getTag();
 
-		mHolder.mTitle.setText(Html
-									.fromHtml(((Task) getChild(	groupPosition,
-																childPosition)).getTitle()));
-		mHolder.mContent.setText(Html
-										.fromHtml(((Task) getChild(	groupPosition,
-																	childPosition)).getContent()));
+		mHolder.mTitle.setText(((Task) getChild(groupPosition,
+												childPosition)).getTitle());
+		mHolder.mContent.setText(((Task) getChild(	groupPosition,
+													childPosition)).getContent());
 
 		return convertView;
 	}
