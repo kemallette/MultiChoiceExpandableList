@@ -65,7 +65,7 @@ public class MultiChoiceExpandableAdapter	extends
 		}
 	}
 
-	class Holder{
+	protected class Holder{
 
 		Bundle			mData	= new Bundle();
 		CompoundButton	mBox;
@@ -143,6 +143,7 @@ public class MultiChoiceExpandableAdapter	extends
 					if (mCheckData.containsKey(CHILD_ID))
 						mList.onChildCheckChange(	mButton,
 													mCheckData.getInt(GROUP_POSITION),
+													mCheckData.getLong(GROUP_ID),
 													mCheckData.getInt(CHILD_POSITION),
 													mCheckData.getLong(CHILD_ID),
 													isChecked);

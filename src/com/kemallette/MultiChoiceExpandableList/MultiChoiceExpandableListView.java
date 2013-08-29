@@ -5,7 +5,6 @@ import java.util.List;
 
 import android.content.Context;
 import android.os.Parcelable;
-import android.support.v4.util.LongSparseArray;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.SparseBooleanArray;
@@ -18,47 +17,31 @@ public class MultiChoiceExpandableListView	extends
 											ExpandableListView	implements
 																MultiChoiceExpandableList{
 
-	private static final String	TAG	= "MultiChoiceExpandableListView";
+	private static final String				TAG						= "MultiChoiceExpandableListView";
 
-
-	/**
-	 * This class stores a group position and the group's checked children. A
-	 * {@link LongSparseArray}<Integer> maps the checked children ids to their
-	 * last known position in the group.
-	 * 
-	 * @author kemallette
-	 */
-	class CheckedChildren{
-
-		int							groupPosition;
-
-		/**
-		 * Indices are checked children ids. Mapped integer values are last
-		 * known child position within the group.
-		 */
-		LongSparseArray<Integer>	mCheckedChildren;
-	}
 
 	/**
 	 * Flag indicating if an item's checked state change is from a user actually
 	 * touching the screen
 	 */
-	private boolean								isCheckChangeFromTouch	= false;
+	private boolean							isCheckChangeFromTouch	= false;
 
-	private int									groupChoiceMode			= CHECK_MODE_NONE;
-	private int									childChoiceMode			= CHECK_MODE_NONE;
+	private int								groupChoiceMode			= CHECK_MODE_NONE;
+	private int								childChoiceMode			= CHECK_MODE_NONE;
 
-	private int									groupCheckTotal,
-												childCheckTotal;
+	private int								groupCheckTotal,
+											childCheckTotal;
 
-	private ExpandableListCheckListener			mClientCheckListener;
+	private ExpandableListCheckListener		mClientCheckListener;
 
-	private MultiChoiceExpandableAdapter		mAdapterWrapper;
+	private MultiChoiceExpandableAdapter	mAdapterWrapper;
 
 	/**
-	 * Indices are checked group ids.
+	 * CAUTION: A groupId key will still be present if any of its children are
+	 * checked even if the group isn't. Use isGroupChecked() for group's check
+	 * status.
 	 */
-	private LongSparseArray<CheckedChildren>	mCheckedItems;
+	private CheckStateStore					mCheckedItems;
 
 
 	public MultiChoiceExpandableListView(	Context context,
@@ -141,6 +124,9 @@ public class MultiChoiceExpandableListView	extends
 	public void onGroupCheckChange(Checkable checkedView, int groupPosition,
 									long groupId, boolean isChecked){
 
+		setGroupCheckedState(	groupId,
+								groupPosition,
+								isChecked);
 
 		if (mClientCheckListener != null)
 			mClientCheckListener.onGroupCheckChange(checkedView,
@@ -153,13 +139,23 @@ public class MultiChoiceExpandableListView	extends
 	@Override
 	public void onChildCheckChange(Checkable checkedView,
 									int groupPosition,
+									long groupId,
 									int childPosition,
 									long childId,
 									boolean isChecked){
 
+
+		setChildCheckedState(
+								groupPosition,
+								groupId,
+								childPosition,
+								childId,
+								isChecked);
+
 		if (mClientCheckListener != null)
 			mClientCheckListener.onChildCheckChange(checkedView,
 													groupPosition,
+													groupId,
 													childPosition,
 													childId,
 													isChecked);
@@ -266,6 +262,86 @@ public class MultiChoiceExpandableListView	extends
 
 
 	/*********************************************************************
+	 * Public utils
+	 **********************************************************************/
+
+	/**
+	 * This will return the group position for a groupId.
+	 * 
+	 * <b>Caution:</b> This has to loop through all group items in the list
+	 * which could raise performance issues
+	 * 
+	 * @param groupId
+	 *            - id for the group you want a position for
+	 * @return group position in the list or a negative number if one was not
+	 *         found
+	 */
+	public int getGroupPosition(long groupId){
+
+		// loop through group positions to match groupId
+		for (int i = 0; i < getExpandableListAdapter()
+														.getGroupCount(); i++)
+			if (getExpandableListAdapter()
+											.getGroupId(i) == groupId)
+				return i;
+
+		return -1;
+	}
+
+
+	/**
+	 * This will find the child position within the a group at groupPosition
+	 * who's id matches childId.
+	 * 
+	 * <b>Caution:</b> This has to loop through all of this groups child items
+	 * which could raise performance issues
+	 * 
+	 * @param groupPosition
+	 *            - the group position the child falls under
+	 * @param childId
+	 * @return the child's position within the group at groupPosition or a
+	 *         negative number if one was not found
+	 */
+	public int getChildPosition(int groupPosition, long childId){
+
+		// loop through group's child positions to match child id
+		for (int i = 0; i < getExpandableListAdapter()
+														.getChildrenCount(groupPosition); i++)
+			if (getExpandableListAdapter()
+											.getChildId(groupPosition,
+														i) == childId)
+				return i;
+
+		return -1;
+	}
+
+
+	/**
+	 * This is a convenience for to avoid having to call getGroupPosition(long
+	 * groupId) and getChildPosition(int groupPosition, long childId).
+	 * 
+	 * <b>Caution:</b> These methods have to loop through all of this groups
+	 * child items which could raise performance issues
+	 * 
+	 * @param groupId
+	 *            - id of the group the child falls under
+	 * @param childId
+	 * @return the child's position within the group with the specified groupId
+	 *         or a negative number if one was not found
+	 */
+	public int getChildPosition(long groupId, long childId){
+
+		int groupPosition = getGroupPosition(groupId);
+
+		if (!(groupPosition < 0))
+			return getChildPosition(groupPosition,
+									childId);
+
+		return -1;
+	}
+
+
+	/*********************************************************************
 	 * Group and Child check state getters/setters
 	 **********************************************************************/
 	@Override
@@ -306,6 +382,22 @@ public class MultiChoiceExpandableListView	extends
 
 	@Override
 	public MultiChoiceExpandableList setChildCheckedState(long childId,
+															boolean checkState){
+
+		// if (childChoiceMode == CHECK_MODE_NONE)
+		// Log.w(TAG,
+		// "Can't set group checked without enabling a child check mode.");
+		//
+
+		refreshVisibleCheckableViews();
+		return this;
+	}
+
+
+	public MultiChoiceExpandableList setChildCheckedState(int groupPosition,
+															long groupId,
+															int childPosition,
+															long childId,
 															boolean checkState){
 
 		// if (childChoiceMode == CHECK_MODE_NONE)
@@ -736,9 +828,42 @@ public class MultiChoiceExpandableListView	extends
 
 
 	/*********************************************************************
+	 * Adapter delegates - internal use
+	 **********************************************************************/
+	boolean hasStableIds(){
+
+		return mAdapterWrapper.hasStableIds();
+	}
+
+
+	public long getChildId(int groupPosition, int childPosition){
+
+		return mAdapterWrapper.getChildId(	groupPosition,
+											childPosition);
+	}
+
+
+	public long getGroupId(int groupPosition){
+
+		return mAdapterWrapper.getGroupId(groupPosition);
+	}
+
+
+	public int getGroupCount(){
+
+		return mAdapterWrapper.getGroupCount();
+	}
+
+
+	public int getChildrenCount(int groupPosition){
+
+		return mAdapterWrapper.getChildrenCount(groupPosition);
+	}
+
+
+	/*********************************************************************
 	 * Overrides from underlying ListView and AbsListView
 	 **********************************************************************/
-
 
 	/*
 	 * For {@link MultiChoiceExpandableListView}, use clearAllChoices() instead
