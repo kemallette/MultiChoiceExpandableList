@@ -141,6 +141,7 @@ public class MultiChoiceExpandableListView	extends
 	public void onGroupCheckChange(Checkable checkedView, int groupPosition,
 									long groupId, boolean isChecked){
 
+
 		if (mClientCheckListener != null)
 			mClientCheckListener.onGroupCheckChange(checkedView,
 													groupPosition,
@@ -283,6 +284,17 @@ public class MultiChoiceExpandableListView	extends
 
 	@Override
 	public MultiChoiceExpandableList setGroupCheckedState(long groupId,
+															boolean checkState){
+
+		// TODO Auto-generated method stub
+
+		refreshVisibleCheckableViews();
+		return this;
+	}
+
+
+	public MultiChoiceExpandableList setGroupCheckedState(long groupId,
+															int groupPosition,
 															boolean checkState){
 
 		// TODO Auto-generated method stub
