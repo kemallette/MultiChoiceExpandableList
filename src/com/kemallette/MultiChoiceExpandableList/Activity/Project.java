@@ -5,13 +5,12 @@ import java.util.ArrayList;
 
 public class Project{
 
-	public static int		TASK_SENTINAL	= 0;
+	public static int				TASK_SENTINAL	= 0;
+	public static ArrayList<Task>	mTasks;
 
-	public long				id;
-	public String			title;
-	public String			content;
-
-	public ArrayList<Task>	mTasks;
+	public long						id;
+	public String					title;
+	public String					content;
 
 
 	public Project(	long id,
@@ -26,11 +25,11 @@ public class Project{
 	}
 
 
-	private void addTasks(){
+	private static void addTasks(){
 
 		mTasks = new ArrayList<Task>();
 
-		for (int i = TASK_SENTINAL + 1; i < TASK_SENTINAL + 20; i++){
+		for (int i = TASK_SENTINAL + 1; i < TASK_SENTINAL + 10; i++){
 
 			mTasks.add(new Task(1000 + i,
 								"List Requirements",
@@ -50,8 +49,9 @@ public class Project{
 			mTasks.add(new Task(6000 + i,
 								"Rest",
 								"You know that thing you do with your head on a pillow?"));
-			TASK_SENTINAL++;
 		}
+
+		TASK_SENTINAL += 10;
 	}
 
 

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:descendantFocusability="blocksDescendants"
@@ -8,18 +9,20 @@
     android:paddingLeft="?android:attr/expandableListPreferredItemPaddingLeft"
     android:paddingTop="5dp" >
 
-    <CheckBox
-        android:id="@android:id/checkbox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true" />
+    <!-- <CheckBox -->
+    <!-- android:id="@android:id/checkbox" -->
+    <!-- android:layout_width="wrap_content" -->
+    <!-- android:layout_height="wrap_content" -->
+    <!-- android:layout_alignParentRight="true" /> -->
 
-    <TextView
+    <CheckedTextView
         android:id="@+id/title"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_toLeftOf="@android:id/checkbox"
+        android:checkMark="?android:attr/textCheckMark"
+        android:clickable="true"
         android:gravity="left"
         android:text="We has a project title"
         android:textSize="24sp" />
@@ -36,5 +39,12 @@
         android:text="This be project content"
         android:textSize="16sp"
         android:textStyle="italic" />
+
+    <TextView
+        android:id="@+id/metadata"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/content"
+        android:text="metadata" />
 
 </RelativeLayout>

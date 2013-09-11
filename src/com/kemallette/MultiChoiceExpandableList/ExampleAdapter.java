@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
-import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,9 +17,9 @@ import com.kemallette.MultiChoiceExpandableList.Activity.Task;
 public class ExampleAdapter	extends
 							BaseExpandableListAdapter{
 
-	private class ExampleHolder{
+	private static class ExampleHolder{
 
-		TextView	mTitle, mContent;
+		TextView	mTitle, mContent, mMetaData;
 	}
 
 	public static List<Project>	mProjects	= new ArrayList<Project>();
@@ -41,7 +40,7 @@ public class ExampleAdapter	extends
 
 	private void populateProjects(){
 
-		for (long i = 0; i < 50; i++){
+		for (long i = 0; i < 10; i++){
 			// Add sample projects.
 			mProjects.add(new Project(	i + 1000,
 										"List Requirements",
@@ -139,14 +138,18 @@ public class ExampleAdapter	extends
 			mHolder.mTitle = (TextView) convertView.findViewById(R.id.title);
 			mHolder.mContent = (TextView) convertView
 														.findViewById(R.id.content);
+			mHolder.mMetaData = (TextView) convertView
+														.findViewById(R.id.metadata);
 			convertView.setTag(mHolder);
 		}else
 			mHolder = (ExampleHolder) convertView.getTag();
 
-		mHolder.mTitle.setText(Html
-									.fromHtml(((Project) getGroup(groupPosition)).getTitle()));
-		mHolder.mContent.setText(Html
-										.fromHtml(((Project) getGroup(groupPosition)).getContent()));
+		mHolder.mTitle.setText(((Project) getGroup(groupPosition)).getTitle());
+		mHolder.mContent.setText(((Project) getGroup(groupPosition)).getContent());
+		mHolder.mMetaData.setText("groupId: "
+									+ getGroupId(groupPosition)
+									+ "   |    groupPosition: "
+									+ groupPosition);
 
 		return convertView;
 	}
@@ -174,6 +177,8 @@ public class ExampleAdapter	extends
 			mHolder.mTitle = (TextView) convertView.findViewById(R.id.title);
 			mHolder.mContent = (TextView) convertView
 														.findViewById(R.id.content);
+			mHolder.mMetaData = (TextView) convertView
+														.findViewById(R.id.metadata);
 
 			convertView.setTag(mHolder);
 		}else
@@ -183,6 +188,16 @@ public class ExampleAdapter	extends
 												childPosition)).getTitle());
 		mHolder.mContent.setText(((Task) getChild(	groupPosition,
 													childPosition)).getContent());
+		mHolder.mMetaData.setText("groupId: "
+									+ getGroupId(groupPosition)
+									+
+									"   |   childId: "
+									+ getChildId(	groupPosition,
+													childPosition)
+									+ "   |    groupPosition: "
+									+ groupPosition
+									+ "   |    childPosition: "
+									+ childPosition);
 
 		return convertView;
 	}

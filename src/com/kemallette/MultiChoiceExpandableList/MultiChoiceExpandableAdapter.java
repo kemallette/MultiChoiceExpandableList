@@ -8,7 +8,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
-import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ExpandableListAdapter;
@@ -65,7 +64,7 @@ public class MultiChoiceExpandableAdapter	extends
 		}
 	}
 
-	protected class Holder{
+	protected static class Holder{
 
 		Bundle			mData	= new Bundle();
 		CompoundButton	mBox;
@@ -213,19 +212,19 @@ public class MultiChoiceExpandableAdapter	extends
 		if (groupView.getTag(R.id.view_holder_key) == null){
 			mGroupHolder = new Holder();
 
-			mGroupHolder.mBox = (CheckBox) groupView
-													.findViewById(android.R.id.checkbox);
-
-
-			mGroupHolder.mBox.setOnCheckedChangeListener(this);
+			// mGroupHolder.mBox = (CheckBox) groupView
+			// .findViewById(android.R.id.checkbox);
+			//
+			//
+			// mGroupHolder.mBox.setOnCheckedChangeListener(this);
 			groupView.setTag(	R.id.view_holder_key,
 								mGroupHolder);
 		}else
 			mGroupHolder = (Holder) groupView.getTag(R.id.view_holder_key);
 
-		mGroupHolder.tagGroupBox(	groupPosition,
-									getGroupId(groupPosition));
-		mGroupHolder.mBox.setChecked(mList.isGroupChecked(groupPosition));
+		// mGroupHolder.tagGroupBox( groupPosition,
+		// getGroupId(groupPosition));
+		// mGroupHolder.mBox.setChecked(mList.isGroupChecked(groupPosition));
 
 
 		return groupView;
@@ -245,31 +244,27 @@ public class MultiChoiceExpandableAdapter	extends
 														convertView,
 														parent);
 
-		if (childView == null)
-			Log.e(	TAG,
-					"Users adapter returned null for getChildView");
-
 		Holder mChildHolder;
 		if (childView.getTag(R.id.view_holder_key) == null){
 			mChildHolder = new Holder();
 
-			mChildHolder.mBox = (CheckBox) childView
-													.findViewById(android.R.id.checkbox);
-
-			mChildHolder.mBox.setOnCheckedChangeListener(this);
+			// mChildHolder.mBox = (CheckBox) childView
+			// .findViewById(android.R.id.checkbox);
+			//
+			// mChildHolder.mBox.setOnCheckedChangeListener(this);
 			childView.setTag(	R.id.view_holder_key,
 								mChildHolder);
 		}else
 			mChildHolder = (Holder) childView.getTag(R.id.view_holder_key);
 
-		mChildHolder.tagChildBox(	groupPosition,
-									childPosition,
-									getGroupId(groupPosition),
-									getChildId(	groupPosition,
-												childPosition));
-
-		mChildHolder.mBox.setChecked(mList.isChildChecked(	groupPosition,
-															childPosition));
+		// mChildHolder.tagChildBox( groupPosition,
+		// childPosition,
+		// getGroupId(groupPosition),
+		// getChildId( groupPosition,
+		// childPosition));
+		//
+		// mChildHolder.mBox.setChecked(mList.isChildChecked( groupPosition,
+		// childPosition));
 		return childView;
 	}
 

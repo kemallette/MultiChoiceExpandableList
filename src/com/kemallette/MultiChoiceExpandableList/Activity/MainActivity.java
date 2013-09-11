@@ -3,6 +3,9 @@ package com.kemallette.MultiChoiceExpandableList.Activity;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.Checkable;
 import android.widget.Toast;
 
@@ -51,13 +54,21 @@ public class MainActivity	extends
 	@Override
 	public void onChildCheckChange(Checkable checkedView,
 									int groupPosition,
+									long groupId,
 									int childPosition,
 									long childId,
 									boolean isChecked){
 
 		Toast.makeText(	this,
-						"Child Check Change\nid: "
+						"Child Check Change\n"
+							+ "groupId: "
+							+ groupId
+							+ "groupPosition: "
+							+ groupPosition
+							+ "childId: \n"
 							+ childId
+							+ "childPosition: "
+							+ childPosition
 							+ "\n isChecked: "
 							+ isChecked,
 						Toast.LENGTH_SHORT)
@@ -69,6 +80,17 @@ public class MainActivity	extends
 	private void initViews(){
 
 		mExpandableList = (MultiChoiceExpandableListView) findViewById(R.id.list);
+
+		Button mButton = (Button) findViewById(R.id.test_button);
+		mButton.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View v){
+
+				mExpandableList.colorVisibleItems();
+
+			}
+		});
 	}
 
 

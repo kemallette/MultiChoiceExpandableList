@@ -4,14 +4,17 @@ package com.kemallette.MultiChoiceExpandableList;
 import java.util.List;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.SparseBooleanArray;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Checkable;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
+import android.widget.Toast;
 
 public class MultiChoiceExpandableListView	extends
 											ExpandableListView	implements
@@ -191,22 +194,23 @@ public class MultiChoiceExpandableListView	extends
 
 		int packedPositionType, groupPosition, childPosition;
 
-		// These are both implemented in ListView sub classes which means
+		// These are both implemented in AdapterView which means
 		// they're 'raw'/'flat' list positions
 		int firstVis = getFirstVisiblePosition();
 		int lastVis = getLastVisiblePosition();
-		int count = firstVis;
+		int count = lastVis
+					- firstVis;
 
 		long packedPosition;
 
-		while (count <= lastVis){ // looping through visible list items which
-									// are the only items that will need to be
-									// refreshed. The adapter's getView will
-									// take care of all non-visible items when
-									// the list is scrolled
+		while (count >= 0){ // looping through visible list items which
+							// are the only items that will need to be
+							// refreshed. The adapter's getView will
+							// take care of all non-visible items when
+							// the list is scrolled
 
 			listItem = getChildAt(count); // getChildAt is implemented in
-											// ListView sub classes, so using a
+											// ViewGroup, so using a
 											// 'raw'/'flat' position is fine
 
 			if (listItem != null){
@@ -215,7 +219,8 @@ public class MultiChoiceExpandableListView	extends
 
 				// Returns a packed position from the 'raw'/'flat' position we
 				// got above
-				packedPosition = getExpandableListPosition(count);
+				packedPosition = getExpandableListPosition(count
+															+ firstVis);
 
 				// ExpandableListView has static helpers to extract the type
 				// (group or child position) and the group and/or child
@@ -242,10 +247,139 @@ public class MultiChoiceExpandableListView	extends
 						"getChildAt didn't retrieve a non-null view");
 
 
-			count++;
+			count--;
 		}
 
 		setRefreshingViewStateFlagOff();
+	}
+
+
+	public void colorVisibleItems(){
+
+		View listItem;
+
+		int packedPositionType, groupPosition, childPosition;
+
+		// These are both implemented in ListView sub classes which means
+		// they're 'raw'/'flat' list positions
+		int firstVis = getFirstVisiblePosition();
+		int lastVis = getLastVisiblePosition();
+		int count = lastVis
+					- firstVis;
+		Log.i(	TAG,
+				"firstVisPos: "
+					+ firstVis
+					+ "     lastVisPos: "
+					+ lastVis
+					+ "\nChildCount: "
+					+ getChildCount()
+					+ "\n mCount: "
+					+ count);
+		long packedPosition;
+
+		while (count >= 0){ // looping through visible list items which
+							// are the only items that will need to be
+							// refreshed. The adapter's getView will
+							// take care of all non-visible items when
+							// the list is scrolled
+
+			listItem = getChildAt(count); // getChildAt is implemented in
+											// ViewGroup sub classes, so using a
+											// 'raw'/'flat' position is fine
+
+			if (listItem != null){
+
+				// Returns a packed position from the 'raw'/'flat' position we
+				// got above
+				packedPosition = getExpandableListPosition(count
+															+ firstVis);
+
+				// ExpandableListView has static helpers to extract the type
+				// (group or child position) and the group and/or child
+				// positions from a packed position
+				packedPositionType = getPackedPositionType(packedPosition);
+
+				if (packedPositionType != ExpandableListView.PACKED_POSITION_TYPE_NULL){
+
+					groupPosition = getPackedPositionGroup(packedPosition);
+					if (packedPositionType == ExpandableListView.PACKED_POSITION_TYPE_CHILD){
+						childPosition = getPackedPositionChild(packedPosition);
+						listItem.setBackgroundColor(Color.YELLOW); // pale
+																	// yellow
+						Log.i(	TAG,
+								"CHILD\ngroupPos: "
+									+ groupPosition
+									+ "    childPos: "
+									+ childPosition);
+					}else{
+						// Must have a group position
+						listItem.setBackgroundColor(Color.BLUE); // pale blue
+						Log.i(	TAG,
+								"GROUP\ngroupPos: "
+									+ groupPosition);
+					}
+
+				}else
+					Log.d(	TAG,
+							"Packed position type was null.");
+			}else
+				Log.d(	TAG,
+						"getChildAt didn't retrieve a non-null view");
+
+
+			count--;
+		}
+	}
+
+
+	@Override
+	public boolean onTouchEvent(MotionEvent ev){
+
+
+		return super.onTouchEvent(ev);
+	}
+
+
+	@Override
+	public boolean performItemClick(View v, int position, long id){
+
+		long eLPosition = getExpandableListPosition(position);
+		int type = ExpandableListView.getPackedPositionType(eLPosition);
+
+
+		String typeName = "NULL";
+		int gPosition = ExpandableListView.getPackedPositionGroup(eLPosition);
+		int cPosition = ExpandableListView.getPackedPositionChild(eLPosition);
+
+		switch(type){
+			case ExpandableListView.PACKED_POSITION_TYPE_GROUP:
+				typeName = "Group";
+				break;
+			case ExpandableListView.PACKED_POSITION_TYPE_CHILD:
+				typeName = "Child";
+				break;
+
+		}
+
+		Toast.makeText(	getContext(),
+						"ViewId: "
+							+ v.getId()
+							+ "\nFlatPos: "
+							+ position
+							+ "\nType: "
+							+ typeName
+							+ "\ngroupPos: "
+							+ gPosition
+							+ "\nchildPos: "
+							+ cPosition,
+						Toast.LENGTH_SHORT)
+				.show();
+
+		// super does expand/collapse and fires all group/child related listener
+		// callbacks
+		return super.performItemClick(	v,
+										position,
+										id);
 	}
 
 
