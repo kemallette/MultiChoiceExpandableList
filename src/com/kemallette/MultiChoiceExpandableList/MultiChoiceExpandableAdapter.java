@@ -65,7 +65,7 @@ public class MultiChoiceExpandableAdapter	extends
 		}
 	}
 
-	protected class Holder{
+	protected static class Holder{
 
 		Bundle			mData	= new Bundle();
 		CompoundButton	mBox;
