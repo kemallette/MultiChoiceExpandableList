@@ -66,26 +66,102 @@ class CheckStateStore{
 	}
 
 
-	void setGroupState(int groupPosition, boolean isChecked){
+	void setGroupState(int groupPosition,
+						boolean isChecked,
+						boolean checkChildrenOnGroupCheck){
 
 		if (mList.hasStableIds())
 			setGroupState(	mList.getGroupId(groupPosition),
 							groupPosition,
-							isChecked);
-		else
-			mUnstableCheckedGroups.set(	groupPosition,
+							isChecked,
+							checkChildrenOnGroupCheck);
+		else{
+			setUnstableGroupState(	groupPosition,
+									isChecked,
+									checkChildrenOnGroupCheck);
+			if (checkChildrenOnGroupCheck){
+				setGroupsChildrenState(	groupPosition,
 										isChecked);
+			}
+		}
 	}
 
 
-	void setGroupState(long groupId, int groupPosition, boolean isChecked){
+	void setGroupState(long groupId,
+						int groupPosition,
+						boolean isChecked,
+						boolean checkChildrenOnGroupCheck){
 
-		if (mList.hasStableIds())
-			mCheckedGroups.put(	groupId,
-								groupPosition);
-		else
+		if (mList.hasStableIds()){
+			if (isChecked)
+				mCheckedGroups.put(	groupId,
+									groupPosition);
+			else
+				mCheckedGroups.remove(groupId);
+
+			if (checkChildrenOnGroupCheck){
+				setGroupsChildrenState(	groupId,
+										groupPosition,
+										isChecked);
+			}
+		}else
 			setGroupState(	mList.getGroupPosition(groupId),
-							isChecked);
+							isChecked,
+							checkChildrenOnGroupCheck);
+	}
+
+
+	private void setUnstableGroupState(int groupPosition,
+										boolean isChecked,
+										boolean checkChildrenOnGroupCheck){
+
+		mUnstableCheckedGroups.set(	groupPosition,
+									isChecked);
+		if (checkChildrenOnGroupCheck){
+			setGroupsChildrenState(	groupPosition,
+									isChecked);
+		}
+	}
+
+
+	private void setGroupsChildrenState(long groupId,
+										int groupPosition,
+										boolean isGroupChecked){
+
+		if (mList.hasStableIds()){
+
+			long[] mChildIds = mList.getGroupChildrenIds(groupPosition);
+			int childPos;
+			for (long childId : mChildIds){
+				childPos = mList.getChildPosition(	groupPosition,
+													childId);
+				setChildState(	groupPosition,
+								groupId,
+								childPos,
+								childId,
+								isGroupChecked);
+			}
+
+		}else{
+			setGroupsChildrenState(	groupPosition,
+									isGroupChecked);
+		}
+	}
+
+
+	private void setGroupsChildrenState(int groupPosition,
+										boolean isGroupChecked){
+
+		if (mList.hasStableIds()){
+			setGroupsChildrenState(	mList.getGroupId(groupPosition),
+									groupPosition,
+									isGroupChecked);
+		}else{
+			int childCount = mList.getChildrenCount(groupPosition);
+			for(int i = 0; i < childCount; i++) {
+				setChildState(groupPosition, i, isGroupChecked);
+			}
+		}
 	}
 
 
@@ -220,6 +296,32 @@ class CheckStateStore{
 										.get(childPosition);
 	}
 
+	/*********************************************************************
+	 * Checked Counts
+	 **********************************************************************/
+	protected int getCheckedGroupCount() {
+		// TODO yo dog, do dis
+		int count = 0;
+		return count;
+	}
+	protected int getCheckedChildCount() {
+		// TODO yo dog, do dis
+				int count = 0;
+				return count;
+	}
+	protected int getCheckedChildCount(int groupPosition) {
+		// TODO yo dog, do dis
+				int count = 0;
+				return count;
+	}
+	protected int getCheckedChildCount(long groupId){
+		// TODO yo dog, do dis
+				int count = 0;
+				return count;
+	}
+	/*********************************************************************
+	 * Data store helpers
+	 **********************************************************************/
 
 	private void putCheckedChild(long groupId, int childPosition, long childId){
 
@@ -283,4 +385,38 @@ class CheckStateStore{
 								.clear(childPosition);
 	}
 
+
+	/*********************************************************************
+	 * Clearing
+	 **********************************************************************/
+	public void clearGroups(boolean isCheckChildreonOnGroupCheckEnabled){
+
+		if (mList.hasStableIds()){
+			mCheckedGroups.clear();
+		}else{
+			mUnstableCheckedGroups.clear();
+		}
+	}
+
+
+	public void clearChildren(){
+
+		if (mList.hasStableIds()){
+			mCheckedChildren.clear();
+		}else{
+			mUnstableCheckedChildren.clear();
+		}
+	}
+
+
+	public void clearAll(){
+
+		if (mList.hasStableIds()){
+			mCheckedChildren.clear();
+			mCheckedGroups.clear();
+		}else{
+			mUnstableCheckedChildren.clear();
+			mUnstableCheckedGroups.clear();
+		}
+	}
 }

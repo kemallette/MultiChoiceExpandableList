@@ -17,15 +17,22 @@ public interface MultiChoiceExpandableList	extends
 											ExpandableListCheckListener{
 
 	/**
-	 * Both groups and children cannot be checked.
+	 * Depending on if applied to groups or children, does not allow checks. If
+	 * selected for both group and child check modes, nothing will be checked.
 	 */
 	public static final int	CHECK_MODE_NONE					= 10;
 
 	/**
-	 * Any number of groups and children can be checked.
+	 * Depending on if applied to groups or children, any number of items can be
+	 * checked. If applied to both groups and children, any number of items
+	 * throughout the list can be checked.
 	 */
 	public static final int	CHECK_MODE_MULTI				= 12;
 
+
+	/**
+	 * Only one group in the list can be checked at a time.
+	 */
 	public static final int	GROUP_CHECK_MODE_ONE			= 11;
 
 	/**
@@ -39,6 +46,13 @@ public interface MultiChoiceExpandableList	extends
 	 * this and set checkChidrenOnGroupCheck true.
 	 */
 	public static final int	CHILD_CHECK_MODE_ONE_PER_GROUP	= 14;
+
+
+	/**
+	 * Only one item at a time throughout the whole list (including groups and
+	 * children) can be checked.
+	 */
+	public static final int	CHECK_MODE_ONLY_ONE				= 15;
 
 
 	/**
@@ -151,6 +165,7 @@ public interface MultiChoiceExpandableList	extends
 	public int[] getCheckedChildPositions(long groupId);
 
 
+	
 	public int getGroupChoiceMode();
 
 
@@ -161,8 +176,22 @@ public interface MultiChoiceExpandableList	extends
 
 
 	public MultiChoiceExpandableList setChildChoiceMode(int choiceMode);
+	
+	
 
-
+	/**
+	 * If set to true, on a group check change, that group's children will match the
+	 * group's check state. In other words, if you check a group, all its
+	 * children will also be checked and vice versa. If a group is unchecked,
+	 * all its children will be unchecked.
+	 * 
+	 * @param checkChildrenOnGroupCheck - true to enable, false to disable
+	 * @return
+	 */
+	public MultiChoiceExpandableList checkChildrenOnGroupCheck(boolean checkChildrenOnGroupCheck);
+	
+	public boolean isCheckChildrenOnGroupCheckEnabled();
+	
 	public MultiChoiceExpandableList
 		setGroupCheckedState(int groupPosition, boolean checkState);
 
@@ -203,7 +232,7 @@ public interface MultiChoiceExpandableList	extends
 	public boolean isGroupChecked(long groupId);
 
 
-	public boolean isChildChecked(long childId);
+	public boolean isChildChecked(long groupId, long childId);
 
 
 	public boolean isChildChecked(int groupPosition, int childPosition);

@@ -17,17 +17,25 @@ public class MultiChoiceExpandableListView	extends
 											ExpandableListView	implements
 																MultiChoiceExpandableList{
 
-	private static final String				TAG						= "MultiChoiceExpandableListView";
+	private static final String				TAG							= "MultiChoiceExpandableListView";
 
 
 	/**
 	 * Flag indicating if an item's checked state change is from a user actually
 	 * touching the screen
 	 */
-	private boolean							isCheckChangeFromTouch	= false;
+	private boolean							isCheckChangeFromTouch		= false;
 
-	private int								groupChoiceMode			= CHECK_MODE_NONE;
-	private int								childChoiceMode			= CHECK_MODE_NONE;
+	/**
+	 * If true, on a group check change, that group's children will match the
+	 * group's check state. In other words, if you check a group, all its
+	 * children will also be checked and the reverse. If a group is unchecked,
+	 * all its children will be unchecked.
+	 */
+	private boolean							checkChildrenOnGroupCheck	= false;
+
+	private int								groupChoiceMode				= CHECK_MODE_NONE;
+	private int								childChoiceMode				= CHECK_MODE_NONE;
 
 	private int								groupCheckTotal,
 											childCheckTotal;
@@ -421,37 +429,34 @@ public class MultiChoiceExpandableListView	extends
 		return this;
 	}
 
-
+	
 	@Override
 	public boolean isChildChecked(int groupPosition, int childPosition){
 
-		// TODO Auto-generated method stub
-		return false;
+		return mCheckedItems.isChildChecked(groupPosition,
+											childPosition);
+	}
+
+
+	@Override
+	public boolean isChildChecked(long groupId, long childId){
+
+		return mCheckedItems.isChildChecked(groupId,
+											childId);
 	}
 
 
 	@Override
 	public boolean isGroupChecked(int groupPosition){
 
-		// TODO Auto-generated method stub
-
-		return false;
+		return mCheckedItems.isGroupChecked(groupPosition);
 	}
 
 
 	@Override
 	public boolean isGroupChecked(long groupId){
 
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-
-	@Override
-	public boolean isChildChecked(long childId){
-
-		// TODO Auto-generated method stub
-		return false;
+		return mCheckedItems.isGroupChecked(groupId);
 	}
 
 
@@ -510,13 +515,20 @@ public class MultiChoiceExpandableListView	extends
 	}
 
 
-	public MultiChoiceExpandableListView
-		setCheckChildrenOnGroupCheck(
-										boolean checkChildrenOnGroupCheck){
+	@Override
+	public MultiChoiceExpandableList
+		checkChildrenOnGroupCheck(boolean checkChildrenOnGroupCheck){
 
-		// TODO Check that we're in a mode that allows this
+		this.checkChildrenOnGroupCheck = checkChildrenOnGroupCheck;
 
 		return this;
+	}
+
+
+	@Override
+	public boolean isCheckChildrenOnGroupCheckEnabled(){
+
+		return checkChildrenOnGroupCheck;
 	}
 
 
@@ -546,13 +558,7 @@ public class MultiChoiceExpandableListView	extends
 	@Override
 	public int getCheckedGroupCount(){
 
-		// if (mCheckedGroups != null){
-		// validateCheckedGroups();
-		// groupCheckTotal = mCheckedGroups.cardinality();
-		// }else
-		// groupCheckTotal = 0;
-
-		return groupCheckTotal;
+		return mCheckedItems.getCheckedGroupCount();
 	}
 
 
@@ -565,15 +571,7 @@ public class MultiChoiceExpandableListView	extends
 	@Override
 	public int getCheckedChildCount(){
 
-		childCheckTotal = 0;
-
-		// validateCheckedChildren();
-
-		// if (mCheckedChildren != null)
-		// for (BitSet mChildren : mCheckedChildren.values())
-		// childCheckTotal += mChildren.cardinality();
-
-		return childCheckTotal;
+	return mCheckedItems.getCheckedChildCount();
 	}
 
 
@@ -589,105 +587,15 @@ public class MultiChoiceExpandableListView	extends
 	 */
 	@Override
 	public int getCheckedChildCount(int groupPosition){
-
-		// if (mCheckedChildren != null){
-		//
-		// // validateCheckedChildren(groupPosition);
-		//
-		// BitSet mChildren = mCheckedChildren.get(groupPosition);
-		// if (mChildren != null)
-		// return mChildren.cardinality();
-		// else
-		// return -1;
-		//
-		// }else
-		return -1;
-
+		return mCheckedItems.getCheckedChildCount(groupPosition);
 	}
 
 
 	@Override
 	public int getCheckedChildCount(long groupId){
-
-		// TODO Auto-generated method stub
-		return 0;
+		return mCheckedItems.getCheckedChildCount(groupId);
 	}
 
-
-	/*********************************************************************
-	 * Clearing
-	 **********************************************************************/
-
-	/**
-	 * Clears all checked items in the list and resets the all checked counts.
-	 */
-	@Override
-	public MultiChoiceExpandableList clearAllChoices(){
-
-
-		// if (mCheckedChildren != null)
-		// mCheckedChildren.clear();
-		//
-		// if (mCheckedGroups != null)
-		// mCheckedGroups.clear();
-
-		groupCheckTotal = 0;
-		childCheckTotal = 0;
-
-		refreshVisibleCheckableViews();
-		return this;
-	}
-
-
-	@Override
-	public MultiChoiceExpandableList clearCheckedGroups(){
-
-		refreshVisibleCheckableViews();
-		return null;
-	}
-
-
-	@Override
-	public MultiChoiceExpandableList clearCheckedChildren(){
-
-		refreshVisibleCheckableViews();
-		return null;
-	}
-
-
-	/**
-	 * Clears all checked children for the specified parent group at
-	 * groupPosition.
-	 * 
-	 * @param groupPosition
-	 *            - the group position for the children you want to clear
-	 */
-	@Override
-	public MultiChoiceExpandableList
-		clearCheckedGroupChildren(int groupPosition){
-
-		// TODO Auto-generated method stub
-
-		refreshVisibleCheckableViews();
-		return null;
-	}
-
-
-	/**
-	 * Clears all checked children for the specified parent group at
-	 * groupPosition.
-	 * 
-	 * @param groupId
-	 *            - the group id for the children you want to clear
-	 */
-	@Override
-	public MultiChoiceExpandableList clearCheckedGroupChildren(long groupId){
-
-		// TODO Auto-generated method stub
-
-		refreshVisibleCheckableViews();
-		return null;
-	}
 
 
 	/*********************************************************************
@@ -797,6 +705,78 @@ public class MultiChoiceExpandableListView	extends
 	}
 
 
+
+	/*********************************************************************
+	 * Clearing
+	 **********************************************************************/
+
+	/**
+	 * Clears all checked items in the list and resets the all checked counts.
+	 */
+	@Override
+	public MultiChoiceExpandableList clearAllChoices(){
+
+		mCheckedItems.clearAll();
+
+		groupCheckTotal = 0;
+		childCheckTotal = 0;
+
+		refreshVisibleCheckableViews();
+		return this;
+	}
+
+
+	@Override
+	public MultiChoiceExpandableList clearCheckedGroups(){
+
+		mCheckedItems.clearGroups(checkChildrenOnGroupCheck);
+		refreshVisibleCheckableViews();
+		return this;
+	}
+
+
+	@Override
+	public MultiChoiceExpandableList clearCheckedChildren(){
+
+		mCheckedItems.clearChildren();
+		refreshVisibleCheckableViews();
+		return this;
+	}
+
+
+	/**
+	 * Clears all checked children for the specified parent group at
+	 * groupPosition.
+	 * 
+	 * @param groupPosition
+	 *            - the group position for the children you want to clear
+	 */
+	@Override
+	public MultiChoiceExpandableList
+		clearCheckedGroupChildren(int groupPosition){
+
+
+		refreshVisibleCheckableViews();
+		return this;
+	}
+
+
+	/**
+	 * Clears all checked children for the specified parent group at
+	 * groupPosition.
+	 * 
+	 * @param groupId
+	 *            - the group id for the children you want to clear
+	 */
+	@Override
+	public MultiChoiceExpandableList clearCheckedGroupChildren(long groupId){
+
+		// TODO Auto-generated method stub
+
+		refreshVisibleCheckableViews();
+		return null;
+	}
+
 	/***********************************************************
 	 * Get/Set/Remove ExpandableListCheckListener
 	 ************************************************************/
@@ -843,7 +823,7 @@ public class MultiChoiceExpandableListView	extends
 	}
 
 
-	protected  long getGroupId(int groupPosition){
+	protected long getGroupId(int groupPosition){
 
 		return mAdapterWrapper.getGroupId(groupPosition);
 	}
@@ -855,9 +835,28 @@ public class MultiChoiceExpandableListView	extends
 	}
 
 
-	protected  int getChildrenCount(int groupPosition){
+	protected int getChildrenCount(int groupPosition){
 
 		return mAdapterWrapper.getChildrenCount(groupPosition);
+	}
+
+
+	protected long[] getGroupChildrenIds(int groupPosition){
+
+		long[] ids;
+		int childCount = getChildrenCount(groupPosition);
+
+		if (hasStableIds()){
+			ids = new long[childCount];
+			for (int i = 0; i < childCount; i++){
+				ids[i] = getChildId(groupPosition,
+									i);
+			}
+		}else{
+			ids = new long[0];
+		}
+
+		return ids;
 	}
 
 

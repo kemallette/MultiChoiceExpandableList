@@ -22,8 +22,7 @@
         android:layout_alignParentLeft="true"
         android:layout_toLeftOf="@android:id/checkbox"
         android:gravity="left"
-        android:text="We has a project title"
-        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Large"
+        android:text="City"
         android:textSize="18sp" />
 
     <TextView
@@ -35,7 +34,6 @@
         android:layout_toLeftOf="@android:id/checkbox"
         android:gravity="left"
         android:paddingLeft="7dp"
-        android:text="This be project content"
         android:textSize="12sp"
         android:textStyle="italic" />
 
