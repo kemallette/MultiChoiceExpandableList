@@ -1,4 +1,4 @@
-package com.kemallette.MultiChoiceExpandableList.Activity;
+package com.kemallette.MultiChoiceExpandableList.Example;
 
 
 import android.app.Activity;
@@ -51,6 +51,7 @@ public class MainActivity	extends
 	@Override
 	public void onChildCheckChange(Checkable checkedView,
 									int groupPosition,
+									long groupId,
 									int childPosition,
 									long childId,
 									boolean isChecked){
