@@ -830,32 +830,32 @@ public class MultiChoiceExpandableListView	extends
 	/*********************************************************************
 	 * Adapter delegates - internal use
 	 **********************************************************************/
-	boolean hasStableIds(){
+	protected boolean hasStableIds(){
 
 		return mAdapterWrapper.hasStableIds();
 	}
 
 
-	public long getChildId(int groupPosition, int childPosition){
+	protected long getChildId(int groupPosition, int childPosition){
 
 		return mAdapterWrapper.getChildId(	groupPosition,
 											childPosition);
 	}
 
 
-	public long getGroupId(int groupPosition){
+	protected  long getGroupId(int groupPosition){
 
 		return mAdapterWrapper.getGroupId(groupPosition);
 	}
 
 
-	public int getGroupCount(){
+	protected int getGroupCount(){
 
 		return mAdapterWrapper.getGroupCount();
 	}
 
 
-	public int getChildrenCount(int groupPosition){
+	protected  int getChildrenCount(int groupPosition){
 
 		return mAdapterWrapper.getChildrenCount(groupPosition);
 	}
@@ -927,94 +927,5 @@ public class MultiChoiceExpandableListView	extends
 		return -1;
 	}
 
-
-	// Searches the expandable list adapter for a group position matching the
-	// given group ID. The search starts at the given seed position and then
-	// alternates between moving up and moving down until 1) we find the right
-	// position, or 2) we run out of time, or 3) we have looked at every
-	// position
-	// Returns:
-	// Position of the row that matches the given row ID, or
-	// AdapterView.INVALID_POSITION if it can't be found
-	// See also:
-	// AdapterView.findSyncPosition()
-
-	// int findGroupPosition(long groupIdToMatch, int seedGroupPosition){
-	//
-	// int count = mExpandableListAdapter.getGroupCount();
-	//
-	// if (count == 0)
-	// return AdapterView.INVALID_POSITION;
-	//
-	// // If there isn't a selection don't hunt for it
-	// if (groupIdToMatch == AdapterView.INVALID_ROW_ID)
-	// return AdapterView.INVALID_POSITION;
-	//
-	// // Pin seed to reasonable values
-	// seedGroupPosition = Math.max( 0,
-	// seedGroupPosition);
-	// seedGroupPosition = Math.min( count - 1,
-	// seedGroupPosition);
-	//
-	// long endTime = SystemClock.uptimeMillis()
-	// + AdapterView.SYNC_MAX_DURATION_MILLIS;
-	//
-	// long rowId;
-	//
-	// // first position scanned so far
-	// int first = seedGroupPosition;
-	//
-	// // last position scanned so far
-	// int last = seedGroupPosition;
-	//
-	// // True if we should move down on the next iteration
-	// boolean next = false;
-	//
-	// // True when we have looked at the first item in the data
-	// boolean hitFirst;
-	//
-	// // True when we have looked at the last item in the data
-	// boolean hitLast;
-	//
-	// // Get the item ID locally (instead of getItemIdAtPosition), so
-	// // we need the adapter
-	// ExpandableListAdapter adapter = getAdapter();
-	// if (adapter == null)
-	// return AdapterView.INVALID_POSITION;
-	//
-	// while (SystemClock.uptimeMillis() <= endTime){
-	// rowId = adapter.getGroupId(seedGroupPosition);
-	// if (rowId == groupIdToMatch)
-	// // Found it!
-	// return seedGroupPosition;
-	//
-	// hitLast = last == count - 1;
-	// hitFirst = first == 0;
-	//
-	// if (hitLast
-	// && hitFirst)
-	// // Looked at everything
-	// break;
-	//
-	// if (hitFirst
-	// || (next && !hitLast)){
-	// // Either we hit the top, or we are trying to move down
-	// last++;
-	// seedGroupPosition = last;
-	// // Try going up next time
-	// next = false;
-	// }else if (hitLast
-	// || (!next && !hitFirst)){
-	// // Either we hit the bottom, or we are trying to move up
-	// first--;
-	// seedGroupPosition = first;
-	// // Try going down next time
-	// next = true;
-	// }
-	//
-	// }
-	//
-	// return AdapterView.INVALID_POSITION;
-	// }
 
 }

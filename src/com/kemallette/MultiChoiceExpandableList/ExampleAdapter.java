@@ -1,122 +1,92 @@
 package com.kemallette.MultiChoiceExpandableList;
 
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
-import android.app.Activity;
-import android.text.Html;
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
 
-import com.kemallette.MultiChoiceExpandableList.Activity.Project;
-import com.kemallette.MultiChoiceExpandableList.Activity.Task;
+import com.kemallette.MultiChoiceExpandableList.Example.SeedDataUtil;
+import com.kemallette.MultiChoiceExpandableList.Example.WorldCity;
 
 public class ExampleAdapter	extends
 							BaseExpandableListAdapter{
 
-	private class ExampleHolder{
+	private static class ExampleHolder{
 
-		TextView	mTitle, mContent;
+		TextView	mTitle;
 	}
-
-	public static List<Project>	mProjects	= new ArrayList<Project>();
 
 	private ExampleHolder		mHolder;
 
-	private Activity			ctx;
 	private LayoutInflater		inflater;
 
 
-	public ExampleAdapter(Activity context){
+	private HashMap<Character, List<WorldCity>>	mData;
+	private Context								ctx;
 
-		this.ctx = context;
 
-		populateProjects();
+	public ExampleAdapter(Context ctx){
+
+		this.ctx = ctx;
+
+		mData = SeedDataUtil.getAphabetGroupedCities(	ctx,
+														15);
 	}
-
-
-	private void populateProjects(){
-
-		for (long i = 0; i < 50; i++){
-			// Add sample projects.
-			mProjects.add(new Project(	i + 1000,
-										"List Requirements",
-										"Remember MVP - avoid feature creep"));
-
-			mProjects.add(new Project(	i + 2000,
-										"Select Enviornment, Framework and Tooling",
-										"Try not to roll your own whenever possible"));
-
-			mProjects.add(new Project(	i + 3000,
-										"Do work",
-										"Stop browsing Hacker News, Reddit, Slashdot..."));
-
-			mProjects.add(new Project(	i + 4000,
-										"Iterate!",
-										"Don't give up"));
-
-			mProjects
-						.add(new Project(	i + 5000,
-											"Maintain",
-											"Woohoo, feature requests, bug reports, clueless managers.."));
-
-			mProjects
-						.add(new Project(	i + 6000,
-											"Rest",
-											"You know that thing you do with your head on a pillow?"));
-		}
-
-	}
-
-
-	@Override
-	public Object getGroup(int groupPosition){
-
-		return mProjects.get(groupPosition);
-	}
-
-
-	@Override
-	public Object getChild(int groupPosition, int childPosition){
-
-		return mProjects.get(groupPosition)
-						.getTasks()
-						.get(childPosition);
-	}
-
-
-	@Override
-	public long getGroupId(int groupPosition){
-
-		return mProjects.get(groupPosition)
-						.getId();
-	}
-
-
-	@Override
-	public long getChildId(int groupPosition, int childPosition){
-
-		return ((Task) getChild(groupPosition,
-								childPosition)).getId();
-	}
-
 
 	@Override
 	public int getGroupCount(){
 
-		return mProjects.size();
+		return mData.keySet()
+					.size();
 	}
 
 
 	@Override
 	public int getChildrenCount(int groupPosition){
 
-		return ((Project) getGroup(groupPosition)).getTasks()
-													.size();
+		return mData.get((char) ('a'
+							+ groupPosition))
+					.size();
+	}
+
+
+	@Override
+	public Object getGroup(int groupPosition){
+
+		return (char) ('a'
+		+ groupPosition);
+	}
+
+
+	@Override
+	public Object getChild(int groupPosition, int childPosition){
+
+		return mData.get((char) ('a'
+							+ groupPosition))
+					.get(childPosition);
+	}
+
+
+	@Override
+	public long getGroupId(int groupPosition){
+
+		return (Character) getGroup(groupPosition);
+	}
+
+
+	@Override
+	public long getChildId(int groupPosition, int childPosition){
+
+		return mData.get((char) ('a'
+							+ groupPosition))
+					.get(childPosition)
+					.getId();
 	}
 
 
@@ -127,7 +97,7 @@ public class ExampleAdapter	extends
 		if (convertView == null){
 
 			if (inflater == null)
-				inflater = ctx.getLayoutInflater();
+				inflater = LayoutInflater.from(ctx);
 
 			convertView = inflater.inflate(	R.layout.list_item,
 											null);
@@ -137,16 +107,12 @@ public class ExampleAdapter	extends
 			mHolder = new ExampleHolder();
 
 			mHolder.mTitle = (TextView) convertView.findViewById(R.id.title);
-			mHolder.mContent = (TextView) convertView
-														.findViewById(R.id.content);
 			convertView.setTag(mHolder);
 		}else
 			mHolder = (ExampleHolder) convertView.getTag();
 
-		mHolder.mTitle.setText(Html
-									.fromHtml(((Project) getGroup(groupPosition)).getTitle()));
-		mHolder.mContent.setText(Html
-										.fromHtml(((Project) getGroup(groupPosition)).getContent()));
+		mHolder.mTitle.setText(getGroup(groupPosition).toString()
+								.toUpperCase());
 
 		return convertView;
 	}
@@ -162,7 +128,7 @@ public class ExampleAdapter	extends
 		if (convertView == null){
 
 			if (inflater == null)
-				inflater = ctx.getLayoutInflater();
+				inflater = LayoutInflater.from(ctx);
 
 			convertView = inflater.inflate(	R.layout.child_list_item,
 											null);
@@ -172,18 +138,13 @@ public class ExampleAdapter	extends
 			mHolder = new ExampleHolder();
 
 			mHolder.mTitle = (TextView) convertView.findViewById(R.id.title);
-			mHolder.mContent = (TextView) convertView
-														.findViewById(R.id.content);
 
 			convertView.setTag(mHolder);
 		}else
 			mHolder = (ExampleHolder) convertView.getTag();
 
-		mHolder.mTitle.setText(((Task) getChild(groupPosition,
-												childPosition)).getTitle());
-		mHolder.mContent.setText(((Task) getChild(	groupPosition,
-													childPosition)).getContent());
-
+		mHolder.mTitle.setText(getChild(	groupPosition,
+										childPosition).toString());
 		return convertView;
 	}
 
