@@ -7,7 +7,7 @@ package com.kemallette.MultiChoiceExpandableList;
 
 import android.widget.Checkable;
 
-public interface ExpandableListCheckListener{
+public interface MultiCheckListener{
 
 	/**
 	 * Called when the checked state of a group item has changed.

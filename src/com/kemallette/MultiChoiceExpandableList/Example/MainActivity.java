@@ -7,13 +7,13 @@ import android.widget.Checkable;
 import android.widget.Toast;
 
 import com.kemallette.MultiChoiceExpandableList.ExampleAdapter;
-import com.kemallette.MultiChoiceExpandableList.ExpandableListCheckListener;
+import com.kemallette.MultiChoiceExpandableList.MultiCheckListener;
 import com.kemallette.MultiChoiceExpandableList.MultiChoiceExpandableListView;
 import com.kemallette.MultiChoiceExpandableList.R;
 
 public class MainActivity	extends
 							Activity implements
-									ExpandableListCheckListener{
+									MultiCheckListener{
 
 	private MultiChoiceExpandableListView	mExpandableList;
 	private ExampleAdapter					mAdapter;

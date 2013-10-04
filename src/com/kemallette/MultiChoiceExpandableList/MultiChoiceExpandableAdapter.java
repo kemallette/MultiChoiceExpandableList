@@ -136,8 +136,7 @@ public class MultiChoiceExpandableAdapter	extends
 
 					setTouchChangeFlagOn(); // Need to let list know this is an
 											// actual touch initiated check
-											// state
-											// change to avoid unnecessary
+											// state change to avoid unnecessary
 											// redraws
 
 					if (mCheckData.containsKey(CHILD_ID))
