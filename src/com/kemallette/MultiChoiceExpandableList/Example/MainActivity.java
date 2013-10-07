@@ -7,20 +7,21 @@ import android.widget.Checkable;
 import android.widget.Toast;
 
 import com.kemallette.MultiChoiceExpandableList.ExampleAdapter;
-import com.kemallette.MultiChoiceExpandableList.ExpandableListCheckListener;
+import com.kemallette.MultiChoiceExpandableList.MultiCheckListener;
+import com.kemallette.MultiChoiceExpandableList.MultiCheckable;
 import com.kemallette.MultiChoiceExpandableList.MultiChoiceExpandableListView;
 import com.kemallette.MultiChoiceExpandableList.R;
 
 public class MainActivity	extends
 							Activity implements
-									ExpandableListCheckListener{
+									MultiCheckListener{
 
 	private MultiChoiceExpandableListView	mExpandableList;
 	private ExampleAdapter					mAdapter;
 
 
 	@Override
-	protected void onCreate(Bundle arg0){
+	protected void onCreate(final Bundle arg0){
 
 		super.onCreate(arg0);
 
@@ -33,10 +34,10 @@ public class MainActivity	extends
 
 
 	@Override
-	public void onGroupCheckChange(Checkable checkedView,
-									int groupPosition,
-									long groupId,
-									boolean isChecked){
+	public void onGroupCheckChange(final Checkable checkedView,
+									final int groupPosition,
+									final long groupId,
+									final boolean isChecked){
 
 		Toast.makeText(	this,
 						"Group Check Change\nid: "
@@ -49,12 +50,12 @@ public class MainActivity	extends
 
 
 	@Override
-	public void onChildCheckChange(Checkable checkedView,
-									int groupPosition,
-									long groupId,
-									int childPosition,
-									long childId,
-									boolean isChecked){
+	public void onChildCheckChange(final Checkable checkedView,
+									final int groupPosition,
+									final long groupId,
+									final int childPosition,
+									final long childId,
+									final boolean isChecked){
 
 		Toast.makeText(	this,
 						"Child Check Change\nid: "
@@ -70,6 +71,7 @@ public class MainActivity	extends
 	private void initViews(){
 
 		mExpandableList = (MultiChoiceExpandableListView) findViewById(R.id.list);
+		mExpandableList.setExpandableCheckListener(this);
 	}
 
 
@@ -77,7 +79,8 @@ public class MainActivity	extends
 
 		mAdapter = new ExampleAdapter(this);
 		mExpandableList.setAdapter(mAdapter);
-		mExpandableList.setExpandableCheckListener(this);
+		mExpandableList.setGroupChoiceMode(MultiCheckable.CHECK_MODE_MULTI)
+						.setChildChoiceMode(MultiCheckable.CHECK_MODE_MULTI);
 	}
 
 
