@@ -52,7 +52,6 @@ public class MultiChoiceExpandableListView	extends
 				attrs,
 				defStyle);
 
-		mCheckStore = new CheckStateStore(this);
 		// TODO: set check modes and checkChildrenOnGroupCheck from xml attrs
 
 	}
@@ -101,17 +100,21 @@ public class MultiChoiceExpandableListView	extends
 		if (adapter == null)
 			throw new NullPointerException("The adapter you passed was null");
 
-		if (mAdapterWrapper == null)
+
+		if (adapter instanceof MultiChoiceExpandableAdapter)
+			this.mAdapterWrapper = (MultiChoiceExpandableAdapter) adapter;
+
+		else if (mAdapterWrapper == null)
 			mAdapterWrapper = new MultiChoiceExpandableAdapter(	adapter,
 																this);
 		else
 			mAdapterWrapper.setWrappedAdapter(adapter);
+		
+		super.setAdapter(mAdapterWrapper);
 
 		mCheckStore = new CheckStateStore(this); // Must do this to ensure
 													// hasStableIds stays
 													// current
-
-		super.setAdapter(mAdapterWrapper);
 	}
 
 
@@ -569,12 +572,14 @@ public class MultiChoiceExpandableListView	extends
 
 		return mCheckStore.getCheckedChildIds();
 	}
-	
+
+
 	@Override
 	public List<Long> getCheckedChildIds(final int groupPosition){
 
 		return mCheckStore.getCheckedChildIds(groupPosition);
 	}
+
 
 	@Override
 	public int[] getCheckedGroupPositions(){
@@ -608,9 +613,9 @@ public class MultiChoiceExpandableListView	extends
 	public MultiCheckable clearAllChoices(){
 
 		mCheckStore.clearAll();
-		
+
 		refreshVisibleCheckableViews();
-		
+
 		return this;
 	}
 
@@ -619,9 +624,9 @@ public class MultiChoiceExpandableListView	extends
 	public MultiCheckable clearCheckedGroups(){
 
 		mCheckStore.clearGroups(checkChildrenOnGroupCheck);
-		
+
 		refreshVisibleCheckableViews();
-		
+
 		return this;
 	}
 
@@ -630,9 +635,9 @@ public class MultiChoiceExpandableListView	extends
 	public MultiCheckable clearCheckedChildren(){
 
 		mCheckStore.clearChildren();
-		
+
 		refreshVisibleCheckableViews();
-		
+
 		return this;
 	}
 
@@ -649,9 +654,9 @@ public class MultiChoiceExpandableListView	extends
 		clearCheckedGroupChildren(final int groupPosition){
 
 		mCheckStore.clearCheckedGroupChildren(groupPosition);
-		
+
 		refreshVisibleCheckableViews();
-		
+
 		return this;
 	}
 
