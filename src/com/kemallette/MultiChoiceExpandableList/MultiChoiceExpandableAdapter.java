@@ -23,7 +23,6 @@ public class MultiChoiceExpandableAdapter	extends
 	// will need to implement checkable list item views with custom listener
 	// interface
 
-
 	private static final String	TAG	= "MultiChoiceExpandableAdapter";
 
 	private static final String	GROUP_POSITION	= "groupPosition",
@@ -71,7 +70,7 @@ public class MultiChoiceExpandableAdapter	extends
 		CompoundButton	mBox;
 
 
-		void tagGroupBox(int groupPosition, long groupId){
+		void tagGroupBox(final int groupPosition, final long groupId){
 
 			mData.putInt(	GROUP_POSITION,
 							groupPosition);
@@ -81,10 +80,10 @@ public class MultiChoiceExpandableAdapter	extends
 		}
 
 
-		void tagChildBox(int groupPosition,
-							int childPosition,
-							long groupId,
-							long childId){
+		void tagChildBox(final int groupPosition,
+							final int childPosition,
+							final long groupId,
+							final long childId){
 
 			mData.putInt(	GROUP_POSITION,
 							groupPosition);
@@ -98,22 +97,18 @@ public class MultiChoiceExpandableAdapter	extends
 		}
 	}
 
-	/**
-	 * Flag which indicates that we're just refreshing a checkable view to match
-	 * the state we have stored. This is needed to avoid duplicating a check
-	 * change callback.
-	 */
-	private boolean						isRefreshingCheckableViewState	= false;
 
-	private final DataSetObservable		mDataSetObservable				= new DataSetObservable();
-	private final MyDataObserver		mDataObserver					= new MyDataObserver();
+	boolean							isUserCheck			= true;
 
-	private ExpandableListAdapter		mWrappedAdapter;
-	private MultiChoiceExpandableList	mList;
+	private final DataSetObservable	mDataSetObservable	= new DataSetObservable();
+	private final MyDataObserver	mDataObserver		= new MyDataObserver();
+
+	private ExpandableListAdapter	mWrappedAdapter;
+	private final MultiCheckable	mList;
 
 
-	public MultiChoiceExpandableAdapter(ExpandableListAdapter mWrappedAdapter,
-										MultiChoiceExpandableList mList){
+	public MultiChoiceExpandableAdapter(final ExpandableListAdapter mWrappedAdapter,
+										final MultiCheckable mList){
 
 		this.mWrappedAdapter = mWrappedAdapter;
 		this.mList = mList;
@@ -123,9 +118,11 @@ public class MultiChoiceExpandableAdapter	extends
 
 
 	@Override
-	public void onCheckedChanged(CompoundButton mButton, boolean isChecked){
+	public void onCheckedChanged(final CompoundButton mButton,
+									final boolean isChecked){
 
-		if (!isRefreshingCheckableViewState){
+		if (isUserCheck){
+
 			Bundle mCheckData;
 
 			if (mButton.getTag() != null){
@@ -134,9 +131,12 @@ public class MultiChoiceExpandableAdapter	extends
 
 				if (!mCheckData.isEmpty()){
 
-					setTouchChangeFlagOn(); // Need to let list know this is an
+
+					setTouchChangeFlagOn(); // Need to let list know this is
+											// an
 											// actual touch initiated check
-											// state change to avoid unnecessary
+											// state change to avoid
+											// unnecessary
 											// redraws
 
 					if (mCheckData.containsKey(CHILD_ID))
@@ -151,8 +151,8 @@ public class MultiChoiceExpandableAdapter	extends
 													mCheckData.getInt(GROUP_POSITION),
 													mCheckData.getLong(GROUP_ID),
 													isChecked);
-
-					setTouchChangeFlagOff(); // Set flag back to default false
+					setTouchChangeFlagOff(); // Set flag back to default
+												// false
 												// value
 				}
 			}else
@@ -169,41 +169,32 @@ public class MultiChoiceExpandableAdapter	extends
 	}
 
 
-	public void
-		setRefreshingCheckableViewState(boolean isRefreshingCheckableViewState){
-
-		this.isRefreshingCheckableViewState = isRefreshingCheckableViewState;
-	}
-
-
 	private void setTouchChangeFlagOn(){
 
-		if (mList instanceof MultiChoiceExpandableListView)
-			((MultiChoiceExpandableListView) mList).setIsCheckChangeFromTouch(true);
+		((MultiChoiceExpandableListView) mList).setIsCheckChangeFromTouch(true);
 	}
 
 
 	private void setTouchChangeFlagOff(){
 
-		if (mList instanceof MultiChoiceExpandableListView)
-			((MultiChoiceExpandableListView) mList).setIsCheckChangeFromTouch(false);
+		((MultiChoiceExpandableListView) mList).setIsCheckChangeFromTouch(false);
 	}
 
 
-	public void setWrappedAdapter(ExpandableListAdapter mClientAdapter){
+	public void setWrappedAdapter(final ExpandableListAdapter mClientAdapter){
 
 		mWrappedAdapter = mClientAdapter;
 	}
 
 
 	@Override
-	public View getGroupView(int groupPosition, boolean isExpanded,
-								View convertView, ViewGroup parent){
+	public View getGroupView(final int groupPosition, final boolean isExpanded,
+								final View convertView, final ViewGroup parent){
 
-		View groupView = mWrappedAdapter.getGroupView(	groupPosition,
-														isExpanded,
-														convertView,
-														parent);
+		final View groupView = mWrappedAdapter.getGroupView(groupPosition,
+															isExpanded,
+															convertView,
+															parent);
 		if (groupView == null)
 			Log.e(	TAG,
 					"Users adapter returned null for getGroupView");
@@ -224,8 +215,10 @@ public class MultiChoiceExpandableAdapter	extends
 
 		mGroupHolder.tagGroupBox(	groupPosition,
 									getGroupId(groupPosition));
-		mGroupHolder.mBox.setChecked(mList.isGroupChecked(groupPosition));
 
+		isUserCheck = false;
+		mGroupHolder.mBox.setChecked(mList.isGroupChecked(groupPosition));
+		isUserCheck = true;
 
 		return groupView;
 	}
@@ -234,15 +227,15 @@ public class MultiChoiceExpandableAdapter	extends
 	@Override
 	public View getChildView(final int groupPosition,
 								final int childPosition,
-								boolean isLastChild,
-								View convertView,
-								ViewGroup parent){
+								final boolean isLastChild,
+								final View convertView,
+								final ViewGroup parent){
 
-		View childView = mWrappedAdapter.getChildView(	groupPosition,
-														childPosition,
-														isLastChild,
-														convertView,
-														parent);
+		final View childView = mWrappedAdapter.getChildView(groupPosition,
+															childPosition,
+															isLastChild,
+															convertView,
+															parent);
 
 		if (childView == null)
 			Log.e(	TAG,
@@ -266,22 +259,23 @@ public class MultiChoiceExpandableAdapter	extends
 									getGroupId(groupPosition),
 									getChildId(	groupPosition,
 												childPosition));
-
+		isUserCheck = false;
 		mChildHolder.mBox.setChecked(mList.isChildChecked(	groupPosition,
 															childPosition));
+		isUserCheck = true;
 		return childView;
 	}
 
 
 	@Override
-	public void registerDataSetObserver(DataSetObserver mObserver){
+	public void registerDataSetObserver(final DataSetObserver mObserver){
 
 		mDataSetObservable.registerObserver(mObserver);
 	}
 
 
 	@Override
-	public void unregisterDataSetObserver(DataSetObserver mObserver){
+	public void unregisterDataSetObserver(final DataSetObserver mObserver){
 
 		mDataSetObservable.unregisterObserver(mObserver);
 	}
@@ -298,7 +292,7 @@ public class MultiChoiceExpandableAdapter	extends
 
 
 	@Override
-	public Object getChild(int groupPosition, int childPosition){
+	public Object getChild(final int groupPosition, final int childPosition){
 
 		return mWrappedAdapter.getChild(groupPosition,
 										childPosition);
@@ -306,7 +300,7 @@ public class MultiChoiceExpandableAdapter	extends
 
 
 	@Override
-	public long getChildId(int groupPosition, int childPosition){
+	public long getChildId(final int groupPosition, final int childPosition){
 
 		return mWrappedAdapter.getChildId(	groupPosition,
 											childPosition);
@@ -314,14 +308,14 @@ public class MultiChoiceExpandableAdapter	extends
 
 
 	@Override
-	public int getChildrenCount(int groupPosition){
+	public int getChildrenCount(final int groupPosition){
 
 		return mWrappedAdapter.getChildrenCount(groupPosition);
 	}
 
 
 	@Override
-	public long getCombinedChildId(long groupId, long childId){
+	public long getCombinedChildId(final long groupId, final long childId){
 
 		return mWrappedAdapter.getCombinedChildId(	groupId,
 													childId);
@@ -329,14 +323,14 @@ public class MultiChoiceExpandableAdapter	extends
 
 
 	@Override
-	public long getCombinedGroupId(long arg0){
+	public long getCombinedGroupId(final long arg0){
 
 		return mWrappedAdapter.getCombinedGroupId(arg0);
 	}
 
 
 	@Override
-	public Object getGroup(int groupPosition){
+	public Object getGroup(final int groupPosition){
 
 		return mWrappedAdapter.getGroup(groupPosition);
 	}
@@ -350,7 +344,7 @@ public class MultiChoiceExpandableAdapter	extends
 
 
 	@Override
-	public long getGroupId(int groupPosition){
+	public long getGroupId(final int groupPosition){
 
 		return mWrappedAdapter.getGroupId(groupPosition);
 	}
@@ -364,7 +358,8 @@ public class MultiChoiceExpandableAdapter	extends
 
 
 	@Override
-	public boolean isChildSelectable(int groupPosition, int childPosition){
+	public boolean isChildSelectable(final int groupPosition,
+										final int childPosition){
 
 		return mWrappedAdapter.isChildSelectable(	groupPosition,
 													childPosition);
@@ -379,27 +374,28 @@ public class MultiChoiceExpandableAdapter	extends
 
 
 	@Override
-	public void onGroupCollapsed(int groupPosition){
+	public void onGroupCollapsed(final int groupPosition){
 
 		mWrappedAdapter.onGroupCollapsed(groupPosition);
 	}
 
 
 	@Override
-	public void onGroupExpanded(int groupPosition){
+	public void onGroupExpanded(final int groupPosition){
 
 		mWrappedAdapter.onGroupExpanded(groupPosition);
 	}
 
 
-	private void registerClientDataSetObserver(DataSetObserver mObserver){
+	private void registerClientDataSetObserver(final DataSetObserver mObserver){
 
 		mWrappedAdapter.registerDataSetObserver(mObserver);
 
 	}
 
 
-	private void unregisterClientDataSetObserver(DataSetObserver mObserver){
+	private void
+		unregisterClientDataSetObserver(final DataSetObserver mObserver){
 
 		mWrappedAdapter.unregisterDataSetObserver(mObserver);
 

@@ -2,6 +2,7 @@ package com.kemallette.MultiChoiceExpandableList;
 
 
 import java.util.Arrays;
+import java.util.BitSet;
 
 import android.support.v4.util.LongSparseArray;
 import android.util.Log;
@@ -13,7 +14,7 @@ public class Util{
 
 
 	public static <T> long[]
-		getKeys(final LongSparseArray<T> longSparseArray){
+		keys(final LongSparseArray<T> longSparseArray){
 
 		if (longSparseArray == null){
 			Log.e(	TAG,
@@ -50,5 +51,33 @@ public class Util{
 			offset += array.length;
 		}
 		return result;
+	}
+
+
+	public static int[] truePositions(final BitSet mBS){
+
+		final int[] positions = new int[mBS.length()];
+		for (int i = 0; i < positions.length; i++){
+			if (mBS.get(i))
+				positions[i] = i;
+		}
+		return positions;
+	}
+
+
+	public static int[] values(final LongSparseArray<Integer> array){
+
+		if (array == null){
+			Log.e(	TAG,
+					"LongSparseArray array was null!");
+			return new int[0];
+		}
+
+		final int[] positions = new int[array.size()];
+		for (int i = 0; i < positions.length; i++){
+			positions[i] = array.get(i);
+		}
+		return null;
+
 	}
 }
