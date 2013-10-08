@@ -4,6 +4,7 @@ package com.kemallette.MultiChoiceExpandableList;
 import java.util.List;
 
 import android.util.SparseArray;
+import android.widget.AbsListView;
 
 
 /**
@@ -19,40 +20,87 @@ public interface MultiCheckable	extends
 								MultiCheckListener{
 
 	/**
-	 * Depending on if applied to groups or children, does not allow checks. If
-	 * selected for both group and child check modes, nothing will be checked.
+	 * For group choice mode:
+	 * No groups may be checked and the
+	 * checkable view will be hidden or disabled. As such, even if
+	 * checkChildrenWithGroup is true, it will not function.
+	 * 
+	 * For child choice mode:
+	 * No children may be checked and the checkable view will be hidden or
+	 * disabled.
+	 * 
+	 * Equals the same value as {@link AbsListView#CHOICE_MODE_NONE} so
+	 * they can be used interchangeably.
 	 */
-	public static final int	CHECK_MODE_NONE					= 10;
+	public static final int	CHECK_MODE_NONE					= AbsListView.CHOICE_MODE_NONE;
 
 	/**
-	 * Only one item at a time throughout the whole list (including groups and
-	 * children) can be checked.
+	 * If applied to group choice mode, zero to all groups can be checked.
+	 * 
+	 * If applied to child choice mode, zero to all children from any group can
+	 * be checked.
+	 * 
+	 * Equals the same value as {@link AbsListView#CHOICE_MODE_MULTIPLE} so
+	 * they can be used interchangeably.
 	 */
-	public static final int	CHECK_MODE_ONLY_ONE				= 15;
+	public static final int	CHECK_MODE_MULTI				= AbsListView.CHOICE_MODE_MULTIPLE;
 
 	/**
-	 * Depending on if applied to groups or children, any number of items can be
-	 * checked. If applied to both groups and children, any number of items
-	 * throughout the list can be checked.
+	 * If applied to group choice mode, only one group in the list can be
+	 * checked at a time.
+	 * 
+	 * If applied to child choice mode, only one child (regardless of group) in
+	 * the list can be checked at a time.
+	 * 
+	 * Equals the same value as {@link AbsListView#CHOICE_MODE_SINGLE} so
+	 * they can be used interchangeably.
 	 */
-	public static final int	CHECK_MODE_MULTI				= 12;
-
-	/**
-	 * Only one group in the list can be checked at a time.
-	 */
-	public static final int	GROUP_CHECK_MODE_ONE			= 11;
-
-	/**
-	 * Only one child out of the entire list can be checked at one time. You
-	 * cannot use this and set checkChildrenOnGroupCheck true
-	 */
-	public static final int	CHILD_CHECK_MODE_ONE			= 13;
+	public static final int	CHECK_MODE_ONE					= AbsListView.CHOICE_MODE_SINGLE;
 
 	/**
 	 * Only one child item per group can be checked at a time. You cannot use
-	 * this and set checkChidrenOnGroupCheck true.
+	 * this and set checkChildrenWithGroup to true.
 	 */
 	public static final int	CHILD_CHECK_MODE_ONE_PER_GROUP	= 14;
+
+	/**
+	 * Group and child choice modes are automatically set to this if one item
+	 * choice only is enabled. Users should normally never have to set this
+	 * directly.
+	 */
+	public static final int	CHECK_MODE_ONE_ALL				= 15;
+
+
+	/**
+	 * Enables one item choice mode. Only one item at a time throughout the list
+	 * (including groups and children) can be checked. isChoiceOn() will return
+	 * true.
+	 * 
+	 * If checkChildrenWithGroup is enabled, it will be disabled until
+	 * checkChildrenWithGroup is set to true again.
+	 */
+	public MultiCheckable enableOnlyOneItemChoice();
+
+
+	/*
+	 * Disables one item choice mode. isChoiceOn() will return false until
+	 * either enableChoice(int groupChoiceMode, int childChoiceMode) or
+	 * enableOneItemChoice() are called.
+	 */
+	public MultiCheckable disableOnlyOneItemChoice();
+
+
+	public boolean isOneItemChoiceOn();
+
+
+	public MultiCheckable
+		enableChoice(int groupChoiceMode, int childChoiceMode);
+
+
+	public MultiCheckable disableChoice();
+
+
+	public boolean isChoiceOn();
 
 
 	/*********************************************************************
@@ -76,8 +124,7 @@ public interface MultiCheckable	extends
 
 
 	/**
-	 * Use this if you want all the checked children for a specific group at
-	 * groupPosition.
+	 * Creates a List<Long> of checked children for the group at groupPosition.
 	 * 
 	 * @param groupPosition
 	 *            - group position where the checked children fall under
@@ -156,12 +203,12 @@ public interface MultiCheckable	extends
 
 
 	/**
-	 * If set to true, on a group check change, that group's children will match
+	 * If true, on a group check change, that group's children will match
 	 * the group's check state. In other words, if you check a group, all its
 	 * children will also be checked and vice versa. If a group is unchecked,
 	 * all its children will be unchecked.
 	 * 
-	 * @param checkChildrenOnGroupCheck
+	 * @param checkChildrenWithGroup
 	 *            - true to enable, false to disable
 	 * @return
 	 */
@@ -204,17 +251,17 @@ public interface MultiCheckable	extends
 	/*********************************************************************
 	 * Clearing
 	 **********************************************************************/
-	public MultiCheckable clearAllChoices();
+	public MultiCheckable clearAll();
 
 
-	public MultiCheckable clearCheckedGroups();
+	public MultiCheckable clearGroups();
 
 
-	public MultiCheckable clearCheckedChildren();
+	public MultiCheckable clearChildren();
 
 
 	public MultiCheckable
-		clearCheckedGroupChildren(int groupPosition);
+		clearChildren(int groupPosition);
 
 
 	/*********************************************************************

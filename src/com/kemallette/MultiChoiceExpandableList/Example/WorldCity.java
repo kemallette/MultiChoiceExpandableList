@@ -1,5 +1,7 @@
 package com.kemallette.MultiChoiceExpandableList.Example;
 
+import com.kemallette.MultiChoiceExpandableList.R;
+
 public class WorldCity{
 	private final int id;
 	private final String name;

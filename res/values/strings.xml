@@ -1,5 +1,23 @@
 <resources>
 
     <string name="app_name">MultiChoiceExpandableList</string>
+    <string name="only_one_item">Only One Item</string>
+    <string name="group_choice_modes_label">Group Choice Modes</string>
+    <string name="child_choice_modes">Child Choice Modes</string>
+
+    <string-array name="group_choice_modes">
+        <item>Multi</item>
+        <item>One</item>
+        <item>None</item>
+    </string-array>
+    <string-array name="child_choice_modes">
+        <item>Multi</item>
+        <item>One Per Group</item>
+        <item>One</item>
+        <item>None</item>
+    </string-array>
+
+    <string name="group">Group Mode</string>
+    <string name="child">Child Mode</string>
 
 </resources>
