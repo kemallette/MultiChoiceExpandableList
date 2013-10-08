@@ -1,9 +1,11 @@
 package com.kemallette.MultiChoiceExpandableList;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -26,7 +28,8 @@ public class MultiChoiceExpandableListView	extends
 	 * touching the screen
 	 */
 	private boolean							isCheckChangeFromTouch	= false;
-
+	private boolean							isOneItemChoice			= false;
+	private boolean							isChoiceOn				= true;
 	/**
 	 * If true, on a group check change, that group's children will match the
 	 * group's check state. In other words, if you check a group, all its
@@ -35,8 +38,9 @@ public class MultiChoiceExpandableListView	extends
 	 */
 	private boolean							checkChildrenWithGroup	= false;
 
-	private int								groupChoiceMode			= CHECK_MODE_NONE;
-	private int								childChoiceMode			= CHECK_MODE_NONE;
+
+	private int								groupChoiceMode			= CHECK_MODE_MULTI;
+	private int								childChoiceMode			= CHECK_MODE_MULTI;
 
 	private CheckStateStore					mCheckStore;
 	private MultiCheckListener				mClientCheckListener;
@@ -52,7 +56,41 @@ public class MultiChoiceExpandableListView	extends
 				attrs,
 				defStyle);
 
-		// TODO: set check modes and checkChildrenWithGroup from xml attrs
+		if (attrs != null){
+			TypedArray a = getContext()
+										.obtainStyledAttributes(attrs,
+																R.styleable.MultiChoiceExpandableListView,
+																0,
+																0);
+
+			groupChoiceMode = a.getInt(	R.styleable.MultiChoiceExpandableListView_groupChoiceMode,
+										CHECK_MODE_MULTI);
+
+			childChoiceMode = a.getInt(	R.styleable.MultiChoiceExpandableListView_childChoiceMode,
+										CHECK_MODE_MULTI);
+
+			checkChildrenWithGroup = a.getBoolean(	R.styleable.MultiChoiceExpandableListView_checkChildrenWithGroup,
+													false);
+
+			isOneItemChoice = a.getBoolean(	R.styleable.MultiChoiceExpandableListView_oneItemChoice,
+											false);
+
+			// default on instantiation is true so if both modes are NONE we
+			// need to set to false
+			if (groupChoiceMode == CHECK_MODE_NONE
+				&& childChoiceMode == CHECK_MODE_NONE)
+				isChoiceOn = false;
+
+
+			if (isOneItemChoice){
+				groupChoiceMode = CHECK_MODE_ONE_ALL;
+				childChoiceMode = CHECK_MODE_ONE_ALL;
+				checkChildrenWithGroup = false;
+				isChoiceOn = true;
+			}
+
+			a.recycle();
+		}
 
 	}
 
@@ -125,6 +163,171 @@ public class MultiChoiceExpandableListView	extends
 	}
 
 
+	/*********************************************************************
+	 * Choice Mode Related
+	 **********************************************************************/
+
+	@Override
+	public MultiCheckable
+		enableChoice(int groupChoiceMode, int childChoiceMode){
+
+		setGroupChoiceMode(groupChoiceMode);
+		setChildChoiceMode(childChoiceMode);
+
+		isOneItemChoice = false;
+		isChoiceOn = true;
+
+		mAdapterWrapper.enableChoice();
+
+		return this;
+	}
+
+
+	@Override
+	public MultiCheckable disableChoice(){
+
+		isChoiceOn = false;
+		isOneItemChoice = false;
+
+		groupChoiceMode = CHOICE_MODE_NONE;
+		childChoiceMode = CHOICE_MODE_NONE;
+		return this;
+	}
+
+
+	@Override
+	public boolean isChoiceOn(){
+
+		return isChoiceOn;
+	}
+
+
+	@Override
+	public MultiCheckable setGroupChoiceMode(final int choiceMode){
+
+		if (!isChoiceOn){
+
+			Log.e(	TAG,
+					"Choice is not enabled. Try using enableChoice(groupChoiceMode, childChoiceMode) or enableOnlyOneItemChoice()");
+
+			return this;
+		}
+
+		if (choiceMode != CHECK_MODE_MULTI)
+			clearGroups();
+
+		groupChoiceMode = choiceMode;
+		return this;
+	}
+
+
+	@Override
+	public MultiCheckable setChildChoiceMode(final int choiceMode){
+
+		if (!isChoiceOn){
+
+			Log.e(	TAG,
+					"Choice is not enabled. Try using enableChoice(groupChoiceMode, childChoiceMode) or enableOnlyOneItemChoice()");
+
+			return this;
+		}
+
+		if (choiceMode != CHECK_MODE_MULTI)
+			clearChildren();
+
+		childChoiceMode = choiceMode;
+		return this;
+	}
+
+
+	@Override
+	public MultiCheckable
+		checkChildrenWithGroup(final boolean checkChildrenWithGroup){
+
+		if (!isChoiceOn){
+
+			Log.e(	TAG,
+					"Choice is not enabled. Try using enableChoice(groupChoiceMode, childChoiceMode) or enableOnlyOneItemChoice()");
+
+			return this;
+		}
+
+		this.checkChildrenWithGroup = checkChildrenWithGroup;
+
+		return this;
+	}
+
+
+	@Override
+	public boolean checkChildrenWithGroup(){
+
+		return checkChildrenWithGroup;
+	}
+
+
+	/*
+	 * Enables one item choice mode. Only one item at a time throughout the list
+	 * (including groups and children) can be checked. isChoiceOn() will return
+	 * true.
+	 * 
+	 * If checkChildrenWithGroup is enabled, it will be disabled until
+	 * checkChildrenWithGroup is set to true again.
+	 */
+	@Override
+	public MultiCheckable enableOnlyOneItemChoice(){
+
+		isOneItemChoice = true;
+		isChoiceOn = true;
+
+		checkChildrenWithGroup = false;
+
+		groupChoiceMode = CHECK_MODE_ONE_ALL;
+		childChoiceMode = CHECK_MODE_ONE_ALL;
+
+		mAdapterWrapper.enableChoice();
+		return this;
+	}
+
+
+	/*
+	 * This disables one item choice mode. isChoiceOn() will return false until
+	 * either enableChoice(int groupChoiceMode, int childChoiceMode) or
+	 * enableOnlyOneItemChoice() are called.
+	 */
+	@Override
+	public MultiCheckable disableOnlyOneItemChoice(){
+
+		groupChoiceMode = CHOICE_MODE_NONE;
+		childChoiceMode = CHOICE_MODE_NONE;
+
+		isOneItemChoice = false;
+		isChoiceOn = false;
+
+		return this;
+	}
+
+
+	@Override
+	public boolean isOneItemChoiceOn(){
+
+		return isOneItemChoice;
+	}
+
+
+	@Override
+	public int getGroupChoiceMode(){
+
+		return groupChoiceMode;
+	}
+
+
+	@Override
+	public int getChildChoiceMode(){
+
+		return childChoiceMode;
+	}
+
+
 	/***********************************************************
 	 * MultiCheckListener Callbacks
 	 ************************************************************/
@@ -134,18 +337,20 @@ public class MultiChoiceExpandableListView	extends
 									final long groupId,
 									final boolean isChecked){
 
-		if (groupChoiceMode != CHECK_MODE_NONE)
-			setGroupCheckedState(	groupPosition,
-									isChecked);
-		else
-			Log.i(	TAG,
-					"onGroupCheckChange called, but groupChoice mode is NONE");
+		if (isChoiceOn){
+			if (groupChoiceMode != CHOICE_MODE_NONE)
+				setGroupCheckedState(	groupPosition,
+										isChecked);
+			else
+				Log.i(	TAG,
+						"onGroupCheckChange called, but groupChoice mode is NONE");
 
-		if (mClientCheckListener != null)
-			mClientCheckListener.onGroupCheckChange(checkedView,
-													groupPosition,
-													groupId,
-													isChecked);
+			if (mClientCheckListener != null)
+				mClientCheckListener.onGroupCheckChange(checkedView,
+														groupPosition,
+														groupId,
+														isChecked);
+		}
 	}
 
 
@@ -157,22 +362,23 @@ public class MultiChoiceExpandableListView	extends
 									final long childId,
 									final boolean isChecked){
 
+		if (isChoiceOn){
+			if (childChoiceMode != CHOICE_MODE_NONE)
+				setChildCheckedState(	groupPosition,
+										childPosition,
+										isChecked);
+			else
+				Log.i(	TAG,
+						"onChildCheckChange called, but childChoice mode is NONE");
 
-		if (childChoiceMode != CHECK_MODE_NONE)
-			setChildCheckedState(	groupPosition,
-									childPosition,
-									isChecked);
-		else
-			Log.i(	TAG,
-					"onChildCheckChange called, but childChoice mode is NONE");
-
-		if (mClientCheckListener != null)
-			mClientCheckListener.onChildCheckChange(checkedView,
-													groupPosition,
-													groupId,
-													childPosition,
-													childId,
-													isChecked);
+			if (mClientCheckListener != null)
+				mClientCheckListener.onChildCheckChange(checkedView,
+														groupPosition,
+														groupId,
+														childPosition,
+														childId,
+														isChecked);
+		}
 	}
 
 
@@ -358,20 +564,32 @@ public class MultiChoiceExpandableListView	extends
 		setGroupCheckedState(final int groupPosition,
 								final boolean isChecked){
 
-		switch(groupChoiceMode){// Don't need to do anything for MULTI
+		if (!isChoiceOn){
 
-			case CHECK_MODE_ONLY_ONE:
-				if (!checkChildrenWithGroup)
-					mCheckStore.clearAll();
-				else
-					Log.e(	TAG,
-							"Choice Mode is ONLY_ONE, but checkChildreOnGroupCheck is true. This can't happen.");
-				break;
+			Log.e(	TAG,
+					"Choice is not enabled. Try using enableChoice(groupChoiceMode, childChoiceMode) or enableOnlyOneItemChoice()");
+			return this;
+		}
 
-			case GROUP_CHECK_MODE_ONE:
-				mCheckStore.clearGroups(checkChildrenWithGroup);
+		if (isOneItemChoice){
+
+			clearAll();
+
+			if (checkChildrenWithGroup)
+				Log.e(	TAG,
+						"One Item Choice Mode is on, but checkChildrenWithGroup is true. ");
+		}
+
+		switch(groupChoiceMode){
+
+			case CHECK_MODE_NONE:
+				return this;
+
+			case CHECK_MODE_ONE:
+				clearGroups();
 				break;
 		}
+
 
 		mCheckStore.setGroupState(	groupPosition,
 									isChecked,
@@ -389,21 +607,34 @@ public class MultiChoiceExpandableListView	extends
 								final int childPosition,
 								final boolean isChecked){
 
+		if (!isChoiceOn){
+
+			Log.e(	TAG,
+					"Choice is not enabled. Try using enableChoice(groupChoiceMode, childChoiceMode) or enableOnlyOneItemChoice()");
+			return this;
+		}
+
+
+		if (isOneItemChoice){
+
+			clearAll();
+
+			if (checkChildrenWithGroup)
+				Log.e(	TAG,
+						"One Item Choice Mode is on, but checkChildrenWithGroup is true. ");
+		}
 
 		switch(childChoiceMode){
 
-			case CHECK_MODE_ONLY_ONE:
-				if (!checkChildrenWithGroup)
-					mCheckStore.clearAll();
-				else
-					Log.e(	TAG,
-							"Choice Mode is ONLY_ONE, but checkChildreOnGroupCheck is true. This can't happen.");
+			case CHECK_MODE_NONE:
+				return this;
+
+			case CHECK_MODE_ONE:
+				clearChildren();
 				break;
 
-
-			case CHILD_CHECK_MODE_ONE:
 			case CHILD_CHECK_MODE_ONE_PER_GROUP:
-				mCheckStore.clearChildren();
+				clearChildren(groupPosition);
 				break;
 		}
 
@@ -422,6 +653,14 @@ public class MultiChoiceExpandableListView	extends
 	@Override
 	public boolean isGroupChecked(final int groupPosition){
 
+		if (!isChoiceOn){
+
+			Log.e(	TAG,
+					"Choice is not enabled. Try using enableChoice(groupChoiceMode, childChoiceMode) or enableOnlyOneItemChoice()");
+
+			return false;
+		}
+
 		return mCheckStore.isGroupChecked(groupPosition);
 	}
 
@@ -430,63 +669,16 @@ public class MultiChoiceExpandableListView	extends
 	public boolean isChildChecked(final int groupPosition,
 									final int childPosition){
 
+		if (!isChoiceOn){
+
+			Log.e(	TAG,
+					"Choice is not enabled. Try using enableChoice(groupChoiceMode, childChoiceMode) or enableOnlyOneItemChoice()");
+
+			return false;
+		}
+
 		return mCheckStore.isChildChecked(	groupPosition,
 											childPosition);
-	}
-
-
-	/*********************************************************************
-	 * Choice Mode getters and Setters
-	 **********************************************************************/
-	@Override
-	public int getGroupChoiceMode(){
-
-		return groupChoiceMode;
-	}
-
-
-	@Override
-	public int getChildChoiceMode(){
-
-		return childChoiceMode;
-	}
-
-
-	@Override
-	public MultiCheckable setGroupChoiceMode(final int choiceMode){
-
-		if (choiceMode != CHECK_MODE_MULTI)
-			mCheckStore.clearAll();
-
-		groupChoiceMode = choiceMode;
-		return this;
-	}
-
-
-	@Override
-	public MultiCheckable setChildChoiceMode(final int choiceMode){
-
-		if (choiceMode != CHECK_MODE_MULTI)
-			mCheckStore.clearAll();
-		childChoiceMode = choiceMode;
-		return this;
-	}
-
-
-	@Override
-	public MultiCheckable
-		checkChildrenWithGroup(final boolean checkChildrenWithGroup){
-
-		this.checkChildrenWithGroup = checkChildrenWithGroup;
-
-		return this;
-	}
-
-
-	@Override
-	public boolean checkChildrenWithGroup(){
-
-		return checkChildrenWithGroup;
 	}
 
 
@@ -503,6 +695,14 @@ public class MultiChoiceExpandableListView	extends
 	@Override
 	public int getCheckedItemCount(){
 
+		if (!isChoiceOn){
+
+			Log.e(	TAG,
+					"Choice is not enabled. Try using enableChoice(groupChoiceMode, childChoiceMode) or enableOnlyOneItemChoice()");
+
+			return 0;
+		}
+
 		return getCheckedGroupCount()
 				+ getCheckedChildCount();
 	}
@@ -516,6 +716,14 @@ public class MultiChoiceExpandableListView	extends
 	@Override
 	public int getCheckedGroupCount(){
 
+		if (!isChoiceOn){
+
+			Log.e(	TAG,
+					"Choice is not enabled. Try using enableChoice(groupChoiceMode, childChoiceMode) or enableOnlyOneItemChoice()");
+
+			return 0;
+		}
+
 		return mCheckStore.getCheckedGroupCount();
 	}
 
@@ -528,6 +736,14 @@ public class MultiChoiceExpandableListView	extends
 	 */
 	@Override
 	public int getCheckedChildCount(){
+
+		if (!isChoiceOn){
+
+			Log.e(	TAG,
+					"Choice is not enabled. Try using enableChoice(groupChoiceMode, childChoiceMode) or enableOnlyOneItemChoice()");
+
+			return 0;
+		}
 
 		return mCheckStore.getCheckedChildCount();
 	}
@@ -546,6 +762,14 @@ public class MultiChoiceExpandableListView	extends
 	@Override
 	public int getCheckedChildCount(final int groupPosition){
 
+		if (!isChoiceOn){
+
+			Log.e(	TAG,
+					"Choice is not enabled. Try using enableChoice(groupChoiceMode, childChoiceMode) or enableOnlyOneItemChoice()");
+
+			return 0;
+		}
+
 		return mCheckStore.getCheckedChildCount(groupPosition);
 	}
 
@@ -557,6 +781,13 @@ public class MultiChoiceExpandableListView	extends
 	@Override
 	public long[] getCheckedGroupIds(){
 
+		if (!isChoiceOn){
+
+			Log.e(	TAG,
+					"Choice is not enabled. Try using enableChoice(groupChoiceMode, childChoiceMode) or enableOnlyOneItemChoice()");
+
+			return new long[0];
+		}
 		return mCheckStore.getCheckedGroupIds();
 	}
 
@@ -564,6 +795,13 @@ public class MultiChoiceExpandableListView	extends
 	@Override
 	public List<Long> getCheckedChildIds(){
 
+		if (!isChoiceOn){
+
+			Log.e(	TAG,
+					"Choice is not enabled. Try using enableChoice(groupChoiceMode, childChoiceMode) or enableOnlyOneItemChoice()");
+
+			return new ArrayList<Long>();
+		}
 		return mCheckStore.getCheckedChildIds();
 	}
 
@@ -571,6 +809,13 @@ public class MultiChoiceExpandableListView	extends
 	@Override
 	public List<Long> getCheckedChildIds(final int groupPosition){
 
+		if (!isChoiceOn){
+
+			Log.e(	TAG,
+					"Choice is not enabled. Try using enableChoice(groupChoiceMode, childChoiceMode) or enableOnlyOneItemChoice()");
+
+			return new ArrayList<Long>();
+		}
 		return mCheckStore.getCheckedChildIds(groupPosition);
 	}
 
@@ -578,6 +823,13 @@ public class MultiChoiceExpandableListView	extends
 	@Override
 	public int[] getCheckedGroupPositions(){
 
+		if (!isChoiceOn){
+
+			Log.e(	TAG,
+					"Choice is not enabled. Try using enableChoice(groupChoiceMode, childChoiceMode) or enableOnlyOneItemChoice()");
+
+			return new int[0];
+		}
 		return mCheckStore.getCheckedGroupPositions();
 	}
 
@@ -585,6 +837,13 @@ public class MultiChoiceExpandableListView	extends
 	@Override
 	public SparseArray<int[]> getCheckedChildPositions(){
 
+		if (!isChoiceOn){
+
+			Log.e(	TAG,
+					"Choice is not enabled. Try using enableChoice(groupChoiceMode, childChoiceMode) or enableOnlyOneItemChoice()");
+
+			return new SparseArray<int[]>();
+		}
 		return mCheckStore.getCheckedChildPositions();
 	}
 
@@ -592,6 +851,13 @@ public class MultiChoiceExpandableListView	extends
 	@Override
 	public int[] getCheckedChildPositions(final int groupPosition){
 
+		if (!isChoiceOn){
+
+			Log.e(	TAG,
+					"Choice is not enabled. Try using enableChoice(groupChoiceMode, childChoiceMode) or enableOnlyOneItemChoice()");
+
+			return new int[0];
+		}
 		return mCheckStore.getCheckedChildPositions(groupPosition);
 	}
 
@@ -604,8 +870,15 @@ public class MultiChoiceExpandableListView	extends
 	 * Clears all checked items in the list and resets the all checked counts.
 	 */
 	@Override
-	public MultiCheckable clearAllChoices(){
+	public MultiCheckable clearAll(){
 
+		if (!isChoiceOn){
+
+			Log.e(	TAG,
+					"Choice is not enabled. Try using enableChoice(groupChoiceMode, childChoiceMode) or enableOnlyOneItemChoice()");
+
+			return this;
+		}
 		mCheckStore.clearAll();
 
 		refreshVisibleCheckableViews();
@@ -615,8 +888,15 @@ public class MultiChoiceExpandableListView	extends
 
 
 	@Override
-	public MultiCheckable clearCheckedGroups(){
+	public MultiCheckable clearGroups(){
 
+		if (!isChoiceOn){
+
+			Log.e(	TAG,
+					"Choice is not enabled. Try using enableChoice(groupChoiceMode, childChoiceMode) or enableOnlyOneItemChoice()");
+
+			return this;
+		}
 		mCheckStore.clearGroups(checkChildrenWithGroup);
 
 		refreshVisibleCheckableViews();
@@ -626,8 +906,15 @@ public class MultiChoiceExpandableListView	extends
 
 
 	@Override
-	public MultiCheckable clearCheckedChildren(){
+	public MultiCheckable clearChildren(){
 
+		if (!isChoiceOn){
+
+			Log.e(	TAG,
+					"Choice is not enabled. Try using enableChoice(groupChoiceMode, childChoiceMode) or enableOnlyOneItemChoice()");
+
+			return this;
+		}
 		mCheckStore.clearChildren();
 
 		refreshVisibleCheckableViews();
@@ -645,8 +932,15 @@ public class MultiChoiceExpandableListView	extends
 	 */
 	@Override
 	public MultiCheckable
-		clearCheckedGroupChildren(final int groupPosition){
+		clearChildren(final int groupPosition){
 
+		if (!isChoiceOn){
+
+			Log.e(	TAG,
+					"Choice is not enabled. Try using enableChoice(groupChoiceMode, childChoiceMode) or enableOnlyOneItemChoice()");
+
+			return this;
+		}
 		mCheckStore.clearCheckedGroupChildren(groupPosition);
 
 		refreshVisibleCheckableViews();
