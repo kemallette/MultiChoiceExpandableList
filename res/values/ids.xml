@@ -2,5 +2,6 @@
 <resources>
 
     <item name="view_holder_key" type="id"/>
+    <item name="checkable_tag_key" type="id"/>
 
 </resources>

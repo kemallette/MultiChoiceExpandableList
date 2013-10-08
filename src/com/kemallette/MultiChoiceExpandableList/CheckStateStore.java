@@ -20,7 +20,6 @@ class CheckStateStore{
 
 	private static final String							TAG	= "CheckStateStore";
 
-	final boolean										hasStableIds;
 
 	/**
 	 * Keys are groupIds. Values are last known groupPosition. If a key
@@ -67,9 +66,8 @@ class CheckStateStore{
 	CheckStateStore(final MultiChoiceExpandableListView mList){
 
 		this.mList = mList;
-		hasStableIds = mList.hasStableIds();
 
-		if (hasStableIds){
+		if (mList.hasStableIds()){
 			mCheckedGroups = new LongSparseArray<Integer>();
 			mCheckedChildren = new LongSparseArray<LongSparseArray<Integer>>();
 		}else{
@@ -92,13 +90,13 @@ class CheckStateStore{
 	 * 
 	 * @param groupPosition
 	 * @param isChecked
-	 * @param checkChildrenOnGroupCheck
+	 * @param checkChildrenWithGroup
 	 */
 	void setGroupState(final int groupPosition,
 						final boolean isChecked,
-						final boolean checkChildrenOnGroupCheck){
+						final boolean checkChildrenWithGroup){
 
-		if (hasStableIds){
+		if (mList.hasStableIds()){
 
 			final long groupId = mList.getGroupId(groupPosition);
 			if (isChecked)
@@ -110,7 +108,7 @@ class CheckStateStore{
 		}else
 			mUnstableCheckedGroups.clear(groupPosition);
 
-		if (checkChildrenOnGroupCheck)
+		if (checkChildrenWithGroup)
 			setGroupsChildrenState(	groupPosition,
 									isChecked);
 	}
@@ -130,11 +128,10 @@ class CheckStateStore{
 										final boolean isChecked){
 
 		final int childCount = mList.getChildrenCount(groupPosition);
-		for (int i = 0; i < childCount; i++){
+		for (int i = 0; i < childCount; i++)
 			setChildState(	groupPosition,
 							i,
 							isChecked);
-		}
 	}
 
 
@@ -145,7 +142,7 @@ class CheckStateStore{
 						final int childPosition,
 						final boolean isChecked){
 
-		if (hasStableIds){
+		if (mList.hasStableIds()){
 
 			final long groupId = mList.getGroupId(groupPosition);
 			final long childId = mList.getChildId(	groupPosition,
@@ -176,7 +173,7 @@ class CheckStateStore{
 
 	boolean isGroupChecked(final int groupPosition){
 
-		if (hasStableIds)
+		if (mList.hasStableIds())
 			return mCheckedGroups.indexOfKey(mList.getGroupId(groupPosition)) >= 0;
 		else
 			return mUnstableCheckedGroups.get(groupPosition);
@@ -192,7 +189,7 @@ class CheckStateStore{
 	 */
 	boolean isChildChecked(final int groupPosition, final int childPosition){
 
-		if (hasStableIds){
+		if (mList.hasStableIds()){
 			final long groupId = mList.getGroupId(groupPosition);
 			final long childId = mList.getChildId(	groupPosition,
 													childPosition);
@@ -202,9 +199,10 @@ class CheckStateStore{
 			else
 				return mCheckedChildren.get(groupId)
 										.indexOfKey(childId) >= 0;
-		}else if (mCheckedUnstableChildren.get(groupPosition) == null){
+
+		}else if (mCheckedUnstableChildren.get(groupPosition) == null)
 			return false;
-		}else
+		else
 			return mCheckedUnstableChildren.get(groupPosition)
 											.get(childPosition);
 	}
@@ -286,7 +284,7 @@ class CheckStateStore{
 
 	long[] getCheckedGroupIds(){
 
-		if (!hasStableIds
+		if (!mList.hasStableIds()
 			|| mCheckedGroups == null){
 			Log.w(	TAG,
 					"The adapter backing this list does not have stable ids. Please ensure your adapter implements stable ids and returns true for hasStableIds. If that's not possible, you will need to use getCheckedGroupPositions instead.");
@@ -299,7 +297,7 @@ class CheckStateStore{
 
 	List<Long> getCheckedChildIds(){
 
-		if (!hasStableIds){
+		if (!mList.hasStableIds()){
 			Log.w(	TAG,
 					"The adapter backing this list does not have stable ids. Please ensure your adapter implements stable ids and returns true for hasStableIds. If that's not possible, you will need to use getCheckedGroupPositions instead.");
 			return new ArrayList<Long>();
@@ -309,18 +307,15 @@ class CheckStateStore{
 		final int count = checkedChildren.size();
 		final ArrayList<LongSparseArray<Integer>> groupChildren = new ArrayList<LongSparseArray<Integer>>(count);
 
-		for (int i = 0; i < count; i++){
+		for (int i = 0; i < count; i++)
 			groupChildren.add(checkedChildren.valueAt(i));
-		}
 
 
 		final ArrayList<Long> ids = new ArrayList<Long>();
 
-		for (final LongSparseArray<Integer> groupCheckedChildren : groupChildren){
-			for (final Long id : Util.keys(groupCheckedChildren)){
+		for (final LongSparseArray<Integer> groupCheckedChildren : groupChildren)
+			for (final Long id : Util.keys(groupCheckedChildren))
 				ids.add(id);
-			}
-		}
 
 		return ids;
 	}
@@ -335,7 +330,7 @@ class CheckStateStore{
 	 */
 	List<Long> getCheckedChildIds(final int groupPosition){
 
-		if (!hasStableIds){
+		if (!mList.hasStableIds()){
 			Log.w(	TAG,
 					"The adapter backing this list does not have stable ids. Please ensure your adapter implements stable ids and returns true for hasStableIds. If that's not possible, you will need to use getCheckedGroupPositions instead.");
 			return new ArrayList<Long>();
@@ -347,20 +342,18 @@ class CheckStateStore{
 		final int count = checkedChildren.size();
 		long[] childIds = null;
 
-		for (int i = 0; i < count; i++){
+		for (int i = 0; i < count; i++)
 			if (checkedChildren.keyAt(i) == groupId){
 				childIds = Util.keys(checkedChildren.valueAt(i));
 				break;
 			}
-		}
 
 
 		final ArrayList<Long> ids = new ArrayList<Long>();
 
 		if (childIds != null)
-			for (final long id : childIds){
+			for (final long id : childIds)
 				ids.add(id);
-			}
 		else
 			Log.w(	TAG,
 					"childIds was null! Check to see if groupId actually matched a key in checkedChildren");
@@ -372,19 +365,16 @@ class CheckStateStore{
 	int[] getCheckedGroupPositions(){
 
 		final int[] positions;
-		if (hasStableIds){
+		if (mList.hasStableIds()){
 
 			final long[] checkedGroupIds = getCheckedGroupIds();
 			positions = new int[checkedGroupIds.length];
 
-			for (int i = 0; i < checkedGroupIds.length; i++){
+			for (int i = 0; i < checkedGroupIds.length; i++)
 				positions[i] = mList.getGroupPosition(checkedGroupIds[i]);
-			}
 
-		}else{
-
+		}else
 			positions = Util.truePositions(mUnstableCheckedGroups);
-		}
 
 		return positions;
 	}
@@ -401,7 +391,7 @@ class CheckStateStore{
 		final SparseArray<int[]> positions = new SparseArray<int[]>();
 
 
-		if (hasStableIds){
+		if (mList.hasStableIds()){
 
 
 			final LongSparseArray<LongSparseArray<Integer>> checkedChildren = mCheckedChildren;
@@ -409,9 +399,8 @@ class CheckStateStore{
 			final long[] groupIds = Util.keys(checkedChildren);
 			final int[] gPositions = new int[groupIds.length];
 
-			for (int i = 0; i < gPositions.length; i++){
+			for (int i = 0; i < gPositions.length; i++)
 				gPositions[i] = mList.getGroupPosition(groupIds[i]);
-			}
 
 
 			LongSparseArray<Integer> children;
@@ -425,10 +414,9 @@ class CheckStateStore{
 					final int[] cPositions = Util.values(children);
 
 					if (cPositions != null
-						&& cPositions.length > 0){
+						&& cPositions.length > 0)
 						positions.put(	gPositions[i],
 										cPositions);
-					}
 				}
 			}
 
@@ -452,13 +440,12 @@ class CheckStateStore{
 
 	int[] getCheckedChildPositions(final int groupPosition){
 
-		if (hasStableIds){
+		if (mList.hasStableIds()){
 			final long groupId = mList.getGroupId(groupPosition);
 			return Util.values(mCheckedChildren.get(groupId));
 
-		}else{
+		}else
 			return Util.truePositions(mCheckedUnstableChildren.get(groupPosition));
-		}
 	}
 
 
@@ -467,30 +454,27 @@ class CheckStateStore{
 	 **********************************************************************/
 	int getCheckedGroupCount(){
 
-		if (hasStableIds){
+		if (mList.hasStableIds())
 			return mCheckedGroups.size();
-		}else{
+		else
 			return mUnstableCheckedGroups.length();
-		}
 	}
 
 
 	int getCheckedChildCount(){
 
 		int count = 0;
-		if (hasStableIds){
+		if (mList.hasStableIds()){
 			final LongSparseArray<LongSparseArray<Integer>> children = mCheckedChildren;
 
-			for (int i = 0; i < children.size(); i++){
+			for (int i = 0; i < children.size(); i++)
 				count += children.get(i)
 									.size();
-			}
 		}else{
 			final SparseArray<BitSet> children = mCheckedUnstableChildren;
-			for (int i = 0; i < children.size(); i++){
+			for (int i = 0; i < children.size(); i++)
 				count += children.get(i)
 									.cardinality();
-			}
 		}
 		return count;
 	}
@@ -498,7 +482,7 @@ class CheckStateStore{
 
 	int getCheckedChildCount(final int groupPosition){
 
-		if (hasStableIds){
+		if (mList.hasStableIds()){
 			final LongSparseArray<Integer> groupChildren = mCheckedChildren.get(groupPosition);
 			return groupChildren.size();
 		}else{
@@ -513,47 +497,41 @@ class CheckStateStore{
 	 **********************************************************************/
 	void clearGroups(final boolean isCheckChildreonOnGroupCheckEnabled){
 
-		if (hasStableIds){
+		if (mList.hasStableIds())
 			mCheckedGroups.clear();
-		}else{
+		else
 			mUnstableCheckedGroups.clear();
-		}
 	}
 
 
 	void clearChildren(){
 
-		if (hasStableIds){
+		if (mList.hasStableIds())
 			mCheckedChildren.clear();
-		}else{
+		else
 			mCheckedUnstableChildren.clear();
-		}
 	}
 
 
-	void clearCheckedGroupChildren(final int groupPosition){
+	void clearChildren(final int groupPosition){
 
-		if (hasStableIds){
+		if (mList.hasStableIds()){
 
 			final long groupId = mList.getGroupId(groupPosition);
 
 			if (mCheckedChildren.get(groupId) != null)
 				mCheckedChildren.get(groupId)
 								.clear();
-		}else{
-
-			if (mCheckedUnstableChildren.get(groupPosition) != null)
-				mCheckedUnstableChildren.get(groupPosition)
-										.clear();
-
-		}
+		}else if (mCheckedUnstableChildren.get(groupPosition) != null)
+			mCheckedUnstableChildren.get(groupPosition)
+									.clear();
 
 	}
 
 
 	void clearAll(){
 
-		if (hasStableIds){
+		if (mList.hasStableIds()){
 			mCheckedChildren.clear();
 			mCheckedGroups.clear();
 		}else{

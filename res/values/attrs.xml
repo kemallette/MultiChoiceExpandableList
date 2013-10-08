@@ -2,28 +2,18 @@
 <resources>
 
     <declare-styleable name="MultiChoiceExpandableListView">
-        <attr name="testType">
-            <enum name="regexp" value="0" />
-            <enum name="numeric" value="1" />
-            <enum name="alpha" value="2" />
-            <enum name="alphaNumeric" value="3" />
-            <enum name="email" value="4" />
-            <enum name="creditCard" value="5" />
-            <enum name="phone" value="6" />
-            <enum name="domainName" value="7" />
-            <enum name="ipAddress" value="8" />
-            <enum name="webUrl" value="9" />
-            <enum name="nocheck" value="10" />
-            <enum name="custom" value="11" />
+        <attr name="groupChoiceMode">
+            <enum name="multi" value="2" />
+            <enum name="one" value="1" />
+            <enum name="none" value="0" />
         </attr>
-        <attr name="testErrorString" format="string" />
-        <attr name="emptyErrorString" format="string" />
-        <attr name="customRegexp" format="string" />
-        <attr name="emptyAllowed" format="boolean" />
-        <attr name="classType" format="string" />
-        <attr name="fontName" format="string" />
-        <attr name="showClearButton" format="boolean" />
-        <attr name="showFormattingOptions" format="boolean" />
+        <attr name="childChoiceMode">
+            <enum name="multi" value="2" />
+            <enum name="onePerGroup" value="14" />
+            <enum name="one" value="1" />
+            <enum name="none" value="0" />
+        </attr>
+        <attr name="oneItemChoice" format="boolean" />
         <attr name="checkChildrenWithGroup" format="boolean" />
     </declare-styleable>
 

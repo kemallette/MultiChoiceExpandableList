@@ -14,6 +14,7 @@ import au.com.bytecode.opencsv.CSVReader;
 
 public class SeedDataUtil{
 
+	private static int									ID_SENTINAL	= 1;
 	private static WorldCity[]							CITIES;
 	private static HashMap<Character, List<WorldCity>>	GROUPED_CITIES;
 	private static int									LAST_SKIP_INTERVAL;
@@ -34,12 +35,10 @@ public class SeedDataUtil{
 		getCities(Context context, int skipInterval){
 
 		if (CITIES == null
-			|| CITIES.length < 1){
-
+			|| CITIES.length < 1)
 			return populateCities(	context,
 									skipInterval);
-
-		}else if (skipInterval == LAST_SKIP_INTERVAL)
+		else if (skipInterval == LAST_SKIP_INTERVAL)
 			return CITIES;
 		else
 			return populateCities(	context,
@@ -61,17 +60,14 @@ public class SeedDataUtil{
 		getAphabetGroupedCities(Context context, int skipInterval){
 
 		if (GROUPED_CITIES == null
-			|| GROUPED_CITIES.size() < 1){
-
+			|| GROUPED_CITIES.size() < 1)
 			return populateGroupedCities(	context,
 											skipInterval);
-
-		}else if (skipInterval == LAST_SKIP_INTERVAL){
+		else if (skipInterval == LAST_SKIP_INTERVAL)
 			return GROUPED_CITIES;
-		}else{
+		else
 			return populateGroupedCities(	context,
 											skipInterval);
-		}
 	}
 
 
@@ -86,30 +82,29 @@ public class SeedDataUtil{
 			InputStreamReader csvStreamReader = new InputStreamReader(
 																		csvStream);
 			CSVReader csvReader = new CSVReader(csvStreamReader);
-			
+
 			String[] line;
 
 			// throw away the header
 			csvReader.readNext();
 
+			
 			int skipCounter = 0;
-			while ((line = csvReader.readNext()) != null){
-
+			while ((line = csvReader.readNext()) != null)
 				if (skipCounter == skipInterval){
 					citiesList.add(line);
 					skipCounter = 0;
 				}else
 					skipCounter++;
 
-			}
-
+			
 			CITIES = new WorldCity[citiesList.size()];
 
-			for (int i = 0; i < citiesList.size(); i++){
-				SeedDataUtil.CITIES[i] = new WorldCity(	i,
+			for (int i = 0; i < citiesList.size(); i++)
+				SeedDataUtil.CITIES[i] = new WorldCity(	ID_SENTINAL++,
 														citiesList.get(i)[0]);
-			}
 			csvReader.close();
+			
 		}catch(IOException e){
 			LAST_SKIP_INTERVAL = skipInterval;
 			e.printStackTrace();
@@ -128,9 +123,8 @@ public class SeedDataUtil{
 
 		if (GROUPED_CITIES.keySet() == null
 			|| GROUPED_CITIES.keySet()
-								.isEmpty()){
+								.isEmpty())
 			populateCharacterKeys();
-		}
 
 		CITIES = getCities(	context,
 							skipInterval);
@@ -162,10 +156,9 @@ public class SeedDataUtil{
 
 		GROUPED_CITIES = new HashMap<Character, List<WorldCity>>(25);
 
-		for (int i = 0; i < 26; i++){
+		for (int i = 0; i < 26; i++)
 			GROUPED_CITIES.put(	(char) ('a' + i),
 								null);
-		}
 
 
 	}
