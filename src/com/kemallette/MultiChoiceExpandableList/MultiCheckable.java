@@ -166,10 +166,10 @@ public interface MultiCheckable	extends
 	 * @return
 	 */
 	public MultiCheckable
-		checkChildrenOnGroupCheck(boolean checkChildrenOnGroupCheck);
+		checkChildrenWithGroup(boolean checkChildrenWithGroup);
 
 
-	public boolean isCheckChildrenOnGroupCheckEnabled();
+	public boolean checkChildrenWithGroup();
 
 
 	/***********************************************************
