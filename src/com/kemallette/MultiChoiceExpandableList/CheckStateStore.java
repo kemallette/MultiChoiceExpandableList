@@ -199,6 +199,7 @@ class CheckStateStore{
 			else
 				return mCheckedChildren.get(groupId)
 										.indexOfKey(childId) >= 0;
+
 		}else if (mCheckedUnstableChildren.get(groupPosition) == null)
 			return false;
 		else
@@ -512,7 +513,7 @@ class CheckStateStore{
 	}
 
 
-	void clearCheckedGroupChildren(final int groupPosition){
+	void clearChildren(final int groupPosition){
 
 		if (mList.hasStableIds()){
 

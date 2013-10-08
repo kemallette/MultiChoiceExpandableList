@@ -25,10 +25,11 @@ public class MultiChoiceExpandableAdapter	extends
 
 	private static final String	TAG	= "MultiChoiceExpandableAdapter";
 
-	private static final String	GROUP_POSITION	= "groupPosition",
+	static final String			GROUP_POSITION	= "groupPosition",
 		CHILD_POSITION = "childPosition",
 		GROUP_ID = "groupId",
-		CHILD_ID = "childId";
+		CHILD_ID = "childId",
+		IS_GROUP = "isGroup";
 
 
 	/**
@@ -76,7 +77,10 @@ public class MultiChoiceExpandableAdapter	extends
 							groupPosition);
 			mData.putLong(	GROUP_ID,
 							groupId);
-			mBox.setTag(mData);
+			mData.putBoolean(	IS_GROUP,
+								true);
+			mBox.setTag(R.id.checkable_tag_key,
+						mData);
 		}
 
 
@@ -93,12 +97,21 @@ public class MultiChoiceExpandableAdapter	extends
 							groupId);
 			mData.putLong(	CHILD_ID,
 							childId);
-			mBox.setTag(mData);
+			mData.putBoolean(	IS_GROUP,
+								false);
+			mBox.setTag(R.id.checkable_tag_key,
+						mData);
+		}
+
+
+		Bundle getBoxData(){
+
+			return (Bundle) mBox.getTag(R.id.checkable_tag_key);
 		}
 	}
 
 
-	boolean							isUserCheck			= true;
+	boolean							ignoreCheckChange	= false;
 	boolean							isChoiceOn			= true;
 
 	private final DataSetObservable	mDataSetObservable	= new DataSetObservable();
@@ -113,6 +126,7 @@ public class MultiChoiceExpandableAdapter	extends
 
 		this.mWrappedAdapter = mWrappedAdapter;
 		this.mList = mList;
+		isChoiceOn = mList.isChoiceOn();
 
 		registerClientDataSetObserver(mDataObserver);
 	}
@@ -140,41 +154,31 @@ public class MultiChoiceExpandableAdapter	extends
 	public void onCheckedChanged(final CompoundButton mButton,
 									final boolean isChecked){
 
-		if (isUserCheck
+		if (!ignoreCheckChange
 			&& isChoiceOn()){
 
 			Bundle mCheckData;
 
-			if (mButton.getTag() != null){
+			if (mButton.getTag(R.id.checkable_tag_key) != null){
 
-				mCheckData = (Bundle) mButton.getTag();
+				mCheckData = (Bundle) mButton.getTag(R.id.checkable_tag_key);
 
-				if (!mCheckData.isEmpty()){
+				if (!mCheckData.isEmpty()
+					&& mCheckData.containsKey(IS_GROUP))
 
-
-					setTouchChangeFlagOn(); // Need to let list know this is
-											// an
-											// actual touch initiated check
-											// state change to avoid
-											// unnecessary
-											// redraws
-
-					if (mCheckData.containsKey(CHILD_ID))
+					if (mCheckData.getBoolean(IS_GROUP))
+						mList.onGroupCheckChange(	mButton,
+													mCheckData.getInt(GROUP_POSITION),
+													mCheckData.getLong(GROUP_ID),
+													isChecked);
+					else
 						mList.onChildCheckChange(	mButton,
 													mCheckData.getInt(GROUP_POSITION),
 													mCheckData.getLong(GROUP_ID),
 													mCheckData.getInt(CHILD_POSITION),
 													mCheckData.getLong(CHILD_ID),
 													isChecked);
-					else
-						mList.onGroupCheckChange(	mButton,
-													mCheckData.getInt(GROUP_POSITION),
-													mCheckData.getLong(GROUP_ID),
-													isChecked);
-					setTouchChangeFlagOff(); // Set flag back to default
-												// false
-												// value
-				}
+
 			}else
 				Log.e(	TAG,
 						"onCheckedChange mButton didn't have any tag data :( ");
@@ -186,18 +190,6 @@ public class MultiChoiceExpandableAdapter	extends
 	public ExpandableListAdapter getWrappedAdapter(){
 
 		return mWrappedAdapter;
-	}
-
-
-	private void setTouchChangeFlagOn(){
-
-		((MultiChoiceExpandableListView) mList).setIsCheckChangeFromTouch(true);
-	}
-
-
-	private void setTouchChangeFlagOff(){
-
-		((MultiChoiceExpandableListView) mList).setIsCheckChangeFromTouch(false);
 	}
 
 
@@ -239,9 +231,13 @@ public class MultiChoiceExpandableAdapter	extends
 		if (isChoiceOn
 			&& mList.getGroupChoiceMode() != MultiCheckable.CHECK_MODE_NONE){
 
-			isUserCheck = false;
+			mGroupHolder.mBox.setVisibility(View.VISIBLE);
+
+
+			ignoreCheckChange = true;
 			mGroupHolder.mBox.setChecked(mList.isGroupChecked(groupPosition));
-			isUserCheck = true;
+			ignoreCheckChange = false;
+
 		}else
 			// if choice mode isn't on or CHECK_MODE_NONE, we need to hide
 			// checkable views
@@ -281,19 +277,25 @@ public class MultiChoiceExpandableAdapter	extends
 		}else
 			mChildHolder = (Holder) childView.getTag(R.id.view_holder_key);
 
+
 		mChildHolder.tagChildBoxData(	groupPosition,
 										childPosition,
 										getGroupId(groupPosition),
 										getChildId(	groupPosition,
 													childPosition));
 
+
 		if (isChoiceOn
 			&& mList.getChildChoiceMode() != MultiCheckable.CHECK_MODE_NONE){
 
-			isUserCheck = false;
+			mChildHolder.mBox.setVisibility(View.VISIBLE);
+
+
+			ignoreCheckChange = true;
 			mChildHolder.mBox.setChecked(mList.isChildChecked(	groupPosition,
 																childPosition));
-			isUserCheck = true;
+			ignoreCheckChange = false;
+
 		}else
 			// if choice mode isn't on or CHECK_MODE_NONE, we need to hide
 			// checkable views
